@@ -1,4 +1,4 @@
-# caterspot
+# Caterspot
 Online Platform for Catering Reservation Services
 
 Welcome to CaterSpot, where we revolutionize the catering experience. We specialize in providing customizable portals for caterers, empowering them to effortlessly manage reservations and bookings online. 
