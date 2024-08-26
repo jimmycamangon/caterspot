@@ -45,8 +45,9 @@ if (isset($_POST['rating']) && isset($_POST['client_id']) && isset($_POST['comme
 
 
     if ($stmt->execute()) {
-        // Feedback inserted successfully
-        echo 'Feedback submitted successfully!';
+        $success = 'Feedback submitted successfully!';
+        echo json_encode(['success' => $success]);
+        exit();
     } else {
         // Failed to insert feedback
         echo 'Error submitting feedback. Please try again.';

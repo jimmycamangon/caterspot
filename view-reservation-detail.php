@@ -315,11 +315,13 @@ if (!isset($_SESSION['user_id'])) {
                                 // Calculate the difference in days between the reservation date and the current date
                                 $reservationDate = strtotime($order['order_date']);
                                 $currentDate = time();
+
+
                                 $differenceInDays = floor(($currentDate - $reservationDate) / (60 * 60 * 24));
                                 foreach ($orders as $order) {
 
                                     ?>
-                                    <?php if ($order['status'] == 'Pending' && $differenceInDays > 2) { ?>
+                                    <?php if ($order['status'] == "Pending" && $differenceInDays <= 2) { ?>
                                         <button type="button" class="btn-get-del" data-toggle="modal" data-target="#reqCancel"
                                             data-dismiss="modal">Request for
                                             cancel</button>
@@ -328,40 +330,44 @@ if (!isset($_SESSION['user_id'])) {
                                             data-transaction-no="<?php echo $order['transactionNo']; ?>"><i
                                                 class='bx bxs-receipt' style="font-size:15px;"></i> &nbsp; Print
                                             Invoice</button>
-
+                                    <?php } else if ($order['status'] == "Pending") { ?>
+                                            <button class="btn-generate-invoice btn-get-main"
+                                                data-transaction-no="<?php echo $order['transactionNo']; ?>"><i
+                                                    class='bx bxs-receipt' style="font-size:15px;"></i> &nbsp; Print
+                                                Invoice</button>
                                     <?php } else if ($order['status'] == "Rejected") { ?>
-                                            <span> <b>Status: </b><span
-                                                    class="badge bg-danger text-white"><?php echo $order['status']; ?></span>
-                                                <span></span>
+                                                <span> <b>Status: </b><span
+                                                        class="badge bg-danger text-white"><?php echo $order['status']; ?></span>
+                                                    <span></span>
                                         <?php } else if ($order['status'] == "Request for cancel") { ?>
-                                                    <span> <b>Status: </b><span
-                                                            class="badge bg-danger text-white"><?php echo $order['status']; ?></span>
-                                                        <span></span>
+                                                        <span> <b>Status: </b><span
+                                                                class="badge bg-danger text-white"><?php echo $order['status']; ?></span>
+                                                            <span></span>
                                             <?php } else if ($order['status'] == "Request cancellation approved.") { ?>
-                                                            <span> <b>Status: </b><span class="badge bg-success text-white">Cancelled</span>
-                                                                <span></span>
+                                                                <span> <b>Status: </b><span class="badge bg-success text-white">Cancelled</span>
+                                                                    <span></span>
                                                 <?php } else if ($order['status'] == "Booked") { ?>
-                                                                    <span><b>Status: </b>
-                                                                        <span class="badge bg-primary"><?php echo $order['status']; ?></span>
-                                                                    </span>
-                                                                    <button class="btn-generate-invoice btn-get-main"
-                                                                        data-transaction-no="<?php echo $order['transactionNo']; ?>"><i
-                                                                            class='bx bxs-receipt' style="font-size:15px;"></i> &nbsp; Print
-                                                                        Invoice</button>
-                                                <?php } else if ($order['status'] == "Completed" && $order['isRated'] == 0) { ?>
                                                                         <span><b>Status: </b>
-                                                                            <span class="badge bg-success"><?php echo $order['status']; ?>
-                                                                            </span>
+                                                                            <span class="badge bg-primary"><?php echo $order['status']; ?></span>
                                                                         </span>
-                                                                        <div class=""><button class='btn-get-main' data-toggle="modal"
-                                                                                data-target="#feedbackModal" data-dismiss="modal">Review</button>
-                                                                        </div>
-                                                <?php } else if ($order['status'] == "Completed"){ ?>
+                                                                        <button class="btn-generate-invoice btn-get-main"
+                                                                            data-transaction-no="<?php echo $order['transactionNo']; ?>"><i
+                                                                                class='bx bxs-receipt' style="font-size:15px;"></i> &nbsp; Print
+                                                                            Invoice</button>
+                                                <?php } else if ($order['status'] == "Completed" && $order['isRated'] == 0) { ?>
                                                                             <span><b>Status: </b>
-                                                                                <span class="badge bg-success">Completed
+                                                                                <span class="badge bg-success"><?php echo $order['status']; ?>
                                                                                 </span>
                                                                             </span>
-                                                                            <!-- <button class="btn-generate-invoice btn-get-main"
+                                                                            <div class=""><button class='btn-get-main' data-toggle="modal"
+                                                                                    data-target="#feedbackModal" data-dismiss="modal">Review</button>
+                                                                            </div>
+                                                <?php } else if ($order['status'] == "Completed") { ?>
+                                                                                <span><b>Status: </b>
+                                                                                    <span class="badge bg-success">Completed
+                                                                                    </span>
+                                                                                </span>
+                                                                                <!-- <button class="btn-generate-invoice btn-get-main"
                                                         data-transaction-no="><i
                                                             class='bx bxs-receipt' style="font-size:15px;"></i> &nbsp; Print
                                                         Invoice</button> -->
@@ -615,7 +621,7 @@ if (!isset($_SESSION['user_id'])) {
                         $.ajax({
                             type: 'POST',
                             url: 'functions/update_rate_display.php',
-                            data: { transactionNo: '<?php echo $transactionNo; ?>'},
+                            data: { transactionNo: '<?php echo $transactionNo; ?>' },
                             success: function (response) {
                                 console.log('Rate display status updated successfully.');
                             },

@@ -20,9 +20,6 @@ $(document).ready(function () {
       return;
     }
 
-    // Clear previous message
-    $("#review-message").html("").removeClass("alert-danger");
-
     // Ajax call to submit feedback
     $.ajax({
       type: "POST",
@@ -34,15 +31,13 @@ $(document).ready(function () {
         comment: comment,
       },
       success: function (response) {
-        // Handle success response
-        if (response.trim() === "Thank you for your feedback!") {
+        var jsonResponse = JSON.parse(response); // Parse the JSON response
+        if (jsonResponse.success === "Feedback submitted successfully!") {
           submitBtn.disabled = true; // Disable the submit button
           submitBtn.style.opacity = 0.5; // Change button opacity
           submitBtn.style.cursor = "not-allowed"; // Change cursor to not allowed
           $("#review-message").html(
-            '<div class="alert alert-success" role="alert">' +
-              response +
-              "</div>"
+            '<div class="alert alert-success" role="alert">Thank you for your feedback!</div>'
           );
           setTimeout(function () {
             // Redirect to my-reservations.php after 2 seconds
