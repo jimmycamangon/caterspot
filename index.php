@@ -71,6 +71,7 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <ul>
                     <li><a class="nav-link scrollto active" href="#hero">Home</a></li>
                     <li><a class="nav-link scrollto" href="#about">About</a></li>
+                    <li><a class="nav-link scrollto" href="#vendor">Become our vendor</a></li>
                     <li><a class="nav-link scrollto" href="#contact">Contact</a></li>
                     <li>
                         <?php
@@ -285,7 +286,8 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     </span>
                                 </div>
                             </div>
-                            <small id="passwordLengthMessage" style="color: red;display:none;padding-top:10px;">&#9679; Password must be
+                            <small id="passwordLengthMessage" style="color: red;display:none;padding-top:10px;">&#9679;
+                                Password must be
                                 at least 8 characters long.</small>
                             <small id="passwordUppercaseMessage" style="color: red;display:none;">&#9679; Password must
                                 contain at least one uppercase letter.</small>
@@ -336,7 +338,6 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
 
-
         <!-- ======= About Section ======= -->
         <section id="about" class="about">
             <div class="container" data-aos="fade-up">
@@ -366,7 +367,131 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </section><!-- End About Section -->
 
+        <!-- Vendor Section -->
+        <section id="vendor" class="vendor">
+            <div class="container" data-aos="fade-up">
+                <div class="row  icon-boxes flex justify-content-evenly">
+                    <!-- Form container on the right side -->
+                    <div class="col-md-124 col-lg-6 " data-aos="zoom-in" data-aos-delay="400">
 
+                        <div class="section-title">
+                            <h2>Join Our Exclusive Catering Network!</h2>
+                        </div>
+                        <div class="section-description">
+                            <p>Expand your reach and grow your catering business by joining our dynamic platform.
+                                Connect with a broader audience, manage bookings effortlessly, and showcase your
+                                services to a growing market.
+                                Sign up today and become a part of our premier catering network!</p>
+                        </div>
+                        <br>
+                        <center><button type="button" class="btn-get-vendor" data-toggle="modal"
+                                data-target="#vendorModal" style="width:30%">
+                                Apply Now
+                            </button>
+                            <br>
+                            <br>
+                            <a href="apply/" style="text-decoration: underline !important;">How to apply?</a>
+                        </center>
+
+                    </div>
+
+                    <!-- Picture on the left side -->
+                    <div class="col-md-6 col-lg-6 d-flex align-items-stretch mb-5 mb-lg-0" data-aos="zoom-in"
+                        data-aos-delay="200">
+                        <img src="assets/img/Login/Merchant.jpg" class="img-fluid" alt="Login Image">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vendor Modal -->
+        <div class="modal fade" id="vendorModal" tabindex="-1" role="dialog" aria-labelledby="vendorModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+
+                <div class="modal-content" id="firstDisplay">
+                    <div class="modal-header d-flex justify-content-between">
+                        <h5 class="modal-title" id="vendorModalLabel">Application Form</h5>
+                        <i class='bx bx-x close' style="font-size:30px; cursor:pointer;" data-dismiss="modal"
+                            aria-label="Close"></i>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <form id="vendorForm" enctype="multipart/form-data">
+                            <div id="vendor_message"></div>
+
+                            <!-- Vendor form -->
+                            <div class="form-group">
+                                <label for="business_name">Business Name:</label>
+                                <input type="text" class="form-control" id="business_name" name="business_name">
+                            </div>
+                            <div class="form-group">
+                                <label for="owner">Owner:</label>
+                                <input type="text" class="form-control" id="owner" name="owner">
+                            </div>
+                            <div class="form-group">
+                                <label for="contact_number">Contact Number:</label>:</label>
+                                <input type="number" class="form-control" id="contact_number" name="contact_number">
+                            </div>
+                            <div class="form-group">
+                                <label for="gmail">Gmail Account:</label>
+                                <input type="email" class="form-control" id="gmail" name="gmail">
+                            </div>
+                            <label for="location">Location:</label>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Region</label>
+                                        <select class="form-control" id="edit_region" name="edit_region">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Province</label>
+                                        <select class="form-control" id="edit_province" name="edit_province">
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>City/Municipality</label>
+                                        <select class="form-control" id="edit_city" name="edit_city">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Street</label>
+                                        <input type="text" class="form-control" id="street" name="street">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="permit">Business Permit:</label>
+                                <input type="file" class="form-control" id="permit" name="permit[]" multiple>
+                            </div>
+                            <div class="form-group">
+                                <label for="menu">Menu:</label>
+                                <input type="file" class="form-control" id="menu" name="menu[]" multiple>
+                            </div>
+                            <div class="form-group">
+                                <label for="business_img">Image:</label>
+                                <input type="file" class="form-control" id="business_img" name="business_img[]"
+                                    multiple>
+                            </div>
+                            <button type="submit" class="btn-get-main my-4" style="width:100% !important;"
+                                id="verificationButton">Submit Form</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- End Vendor Section -->
         <!-- ======= Contact Section ======= -->
         <section id="contact" class="contact">
             <div class="container" data-aos="fade-up">
@@ -413,6 +538,8 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </section><!-- End Contact Section -->
 
+
+
     </main><!-- End #main -->
 
     <!-- ======= Footer ======= -->
@@ -446,8 +573,10 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="col-lg-4 col-md-6 footer-links">
                         <h4>Our Services</h4>
                         <ul>
-                            <?php foreach($cateringServices as $footerCater) :?>
-                            <li><i class="bx bx-chevron-right"></i> <a href="view.php?cater=<?php echo $footerCater['cater_name']; ?>&id=<?php echo $footerCater['client_id']; ?>"><?php echo $footerCater['cater_name'] ?></a></li>
+                            <?php foreach ($cateringServices as $footerCater): ?>
+                                <li><i class="bx bx-chevron-right"></i> <a
+                                        href="view.php?cater=<?php echo $footerCater['cater_name']; ?>&id=<?php echo $footerCater['client_id']; ?>"><?php echo $footerCater['cater_name'] ?></a>
+                                </li>
                             <?php endforeach; ?>
                         </ul>
                     </div>
@@ -499,7 +628,8 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="assets/js/login.js"></script>
     <script src="assets/js/showpassword.js"></script>
     <script src="assets/js/verification-code.js"></script>
-
+    <script src="assets/js/vendor-message.js"></script>
+    <script src="assets/js/fetch-philadd.js"></script>
 
 
 

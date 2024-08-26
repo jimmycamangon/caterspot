@@ -41,6 +41,7 @@ require_once 'functions/fetch-gallery.php';
 
 <body>
 
+
     <!-- ======= Header ======= -->
     <header id="header" class="fixed-top">
         <div class="container d-flex align-items-center justify-content-between">
@@ -200,10 +201,8 @@ require_once 'functions/fetch-gallery.php';
                                     <?php
                                     $image_path = 'assets/img/package-uploads/' . $package['package_image'];
                                     if (file_exists($image_path) && is_file($image_path)) {
-                                        // If image exists, use it
                                         $image_source = $image_path;
                                     } else {
-                                        // If image doesn't exist, use placeholder
                                         $image_source = 'assets/img/package-uploads/Image_not_available.jpg';
                                     }
                                     ?>
@@ -212,24 +211,29 @@ require_once 'functions/fetch-gallery.php';
                                         <h4><?php echo $package['package_name']; ?></h4>
                                         <p><?php echo $package['package_desc']; ?></p>
                                         <div class="portfolio-links">
-                                            <a href="<?php echo $image_source; ?>" data-gallery="portfolioGallery"
-                                                class="portfolio-lightbox" title="<?php echo $package['package_name']; ?>"><span
-                                                    style="font-size:18px;border:1px solid white;padding:0.5em;color:white;">View
-                                                    image</span></a>
+                                            <span class="view-image"
+                                                style="font-size:18px;border:1px solid white;padding:0.5em;color:white;cursor:pointer;"
+                                                data-image="<?php echo $image_source; ?>">
+                                                View image
+                                            </span>
                                             <?php if (!isset($_SESSION['user_id'])) { ?>
-                                                <a href="#" data-toggle="modal" data-target="#RedirectModal"
-                                                    title="More Details"><span
+                                                <a href="#" data-toggle="modal" data-target="#RedirectModal" title="More Details">
+                                                    <span
                                                         style="font-size:18px;border:1px solid white;padding:0.5em;color:white;">View
-                                                        menu</span></a>
+                                                        menu</span>
+                                                </a>
                                             <?php } else { ?>
                                                 <a href="view-details.php?package_id=<?php echo $package['package_id']; ?>&id=<?php echo $_GET['id']; ?>"
-                                                    title="More Details"><span
+                                                    title="More Details">
+                                                    <span
                                                         style="font-size:18px;border:1px solid white;padding:0.5em;color:white;">View
-                                                        menu</span></a>
+                                                        menu</span>
+                                                </a>
                                             <?php } ?>
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>
@@ -269,6 +273,24 @@ require_once 'functions/fetch-gallery.php';
 
             </div>
         </section><!-- End Services Section -->
+
+
+
+        <!-- Image Modal -->
+        <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
+                    </div>
+                    <div class="modal-body">
+                        <img id="modalImage" src="" class="img-fluid" alt="Selected Image">
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ======= About Section ======= -->
         <section id="about" class="about">
             <div class="container" data-aos="fade-up">
@@ -764,6 +786,7 @@ require_once 'functions/fetch-gallery.php';
 
     <script src="assets/js/fetch-feedbacks.js"></script>
     <script src="assets/js/submit-feedbacks.js"></script>
+
 
 </body>
 

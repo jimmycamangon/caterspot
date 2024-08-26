@@ -274,3 +274,22 @@
   new PureCounter();
 
 })()
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Get all elements with class 'view-image'
+  const viewImageElements = document.querySelectorAll('.view-image');
+
+  viewImageElements.forEach(element => {
+      element.addEventListener('click', function() {
+          // Get the image source from the data attribute
+          const imageSrc = this.getAttribute('data-image');
+          
+          // Set the src of the modal image
+          document.getElementById('modalImage').src = imageSrc;
+          
+          // Show the modal
+          $('#imageModal').modal('show');
+      });
+  });
+});
