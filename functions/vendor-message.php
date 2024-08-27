@@ -120,7 +120,7 @@ if (
                 <strong>Owner:</strong> ' . htmlspecialchars($owner) . '<br>
                 <strong>Contact Number:</strong> ' . htmlspecialchars($contact_number) . '<br>
                 <strong>Email:</strong> ' . htmlspecialchars($gmail) . '<br>
-                <strong>Location:</strong> ' . htmlspecialchars($street) . ', ' . htmlspecialchars($city) . ', ' . htmlspecialchars($province) . ', ' . htmlspecialchars($region) . ', ' . htmlspecialchars($street) . '<br>
+                <strong>Location:</strong> ' . htmlspecialchars($street) . ', ' . htmlspecialchars($city) . ', ' . htmlspecialchars($province) . ', ' . htmlspecialchars($region) . '<br>
             </p>
 
             <p>Attached to this email are copies of our Business Permit, Menu, and some images related to our business. We believe that our offerings will be a valuable addition to your platform, and we are excited about the possibility of partnering with you.</p>
