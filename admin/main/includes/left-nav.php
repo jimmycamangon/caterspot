@@ -46,6 +46,10 @@
                         </a>
                     </nav>
                 </div>
+                <a class="nav-link" href="applications.php">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-paperclip"></i></div>
+                    Applications
+                </a>
                 <div class="sb-sidenav-menu-heading">Extras</div>
                 <a class="nav-link" href="profile.php">
                     <div class="sb-nav-link-icon"><i class="fa-solid fa-gear"></i></div>

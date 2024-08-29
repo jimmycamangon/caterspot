@@ -408,7 +408,6 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="modal fade" id="vendorModal" tabindex="-1" role="dialog" aria-labelledby="vendorModalLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
-
                 <div class="modal-content" id="firstDisplay">
                     <div class="modal-header d-flex justify-content-between">
                         <h5 class="modal-title" id="vendorModalLabel">Application Form</h5>
@@ -417,7 +416,6 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
 
                     <div class="modal-body">
-
                         <form id="vendorForm" enctype="multipart/form-data">
                             <div id="vendor_message"></div>
 
@@ -431,7 +429,7 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <input type="text" class="form-control" id="owner" name="owner">
                             </div>
                             <div class="form-group">
-                                <label for="contact_number">Contact Number:</label>:</label>
+                                <label for="contact_number">Contact Number:</label>
                                 <input type="number" class="form-control" id="contact_number" name="contact_number">
                             </div>
                             <div class="form-group">
@@ -472,16 +470,18 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </div>
                             <div class="form-group">
                                 <label for="permit">Business Permit:</label>
-                                <input type="file" class="form-control" id="permit" name="permit[]" multiple>
+                                <input type="file" class="form-control" id="permit" name="permit[]" multiple
+                                    accept=".pdf, .doc, .docx, .jpg, .jpeg, .png">
                             </div>
                             <div class="form-group">
                                 <label for="menu">Menu:</label>
-                                <input type="file" class="form-control" id="menu" name="menu[]" multiple>
+                                <input type="file" class="form-control" id="menu" name="menu[]" multiple
+                                    accept=".pdf, .doc, .docx, .jpg, .jpeg, .png">
                             </div>
                             <div class="form-group">
                                 <label for="business_img">Image:</label>
-                                <input type="file" class="form-control" id="business_img" name="business_img[]"
-                                    multiple>
+                                <input type="file" class="form-control" id="business_img" name="business_img[]" multiple
+                                    accept=".jpg, .jpeg, .png">
                             </div>
                             <button type="submit" class="btn-get-main my-4" style="width:100% !important;"
                                 id="verificationButton">Submit Form</button>

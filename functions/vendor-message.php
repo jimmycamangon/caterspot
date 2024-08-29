@@ -54,10 +54,97 @@ if (
 
 
 
+    // DATABASE
+
+    // Generate a unique client ID
+    $client_id = mt_rand(10000, 99999);
+
+    // Directory for uploads
+    $uploadDir = '../assets/img/client-applications/';
+
+    // Save file paths
+    $permitPaths = [];
+    $menuPaths = [];
+    $businessImgPaths = [];
+
+    // Upload and save permit files
+    if (isset($_FILES['permit'])) {
+        foreach ($_FILES['permit']['tmp_name'] as $key => $tmp_name) {
+            if ($_FILES['permit']['error'][$key] == UPLOAD_ERR_OK) {
+                $fileName = uniqid() . '_' . basename($_FILES['permit']['name'][$key]);
+                $filePath = $uploadDir . $fileName;
+                if (move_uploaded_file($tmp_name, $filePath)) {
+                    $permitPaths[] = $filePath;
+                }
+            }
+        }
+    }
+
+    // Upload and save menu files
+    if (isset($_FILES['menu'])) {
+        foreach ($_FILES['menu']['tmp_name'] as $key => $tmp_name) {
+            if ($_FILES['menu']['error'][$key] == UPLOAD_ERR_OK) {
+                $fileName = uniqid() . '_' . basename($_FILES['menu']['name'][$key]);
+                $filePath = $uploadDir . $fileName;
+                if (move_uploaded_file($tmp_name, $filePath)) {
+                    $menuPaths[] = $filePath;
+                }
+            }
+        }
+    }
+
+    // Upload and save business image files
+    if (isset($_FILES['business_img'])) {
+        foreach ($_FILES['business_img']['tmp_name'] as $key => $tmp_name) {
+            if ($_FILES['business_img']['error'][$key] == UPLOAD_ERR_OK) {
+                $fileName = uniqid() . '_' . basename($_FILES['business_img']['name'][$key]);
+                $filePath = $uploadDir . $fileName;
+                if (move_uploaded_file($tmp_name, $filePath)) {
+                    $businessImgPaths[] = $filePath;
+                }
+            }
+        }
+    }
+
+    // Convert file paths to JSON for storage
+    $permit = json_encode($permitPaths);
+    $menu = json_encode($menuPaths);
+    $business_img = json_encode($businessImgPaths);
+    $status = 'Pending';
+
+    // Prepare SQL statement to insert data into tbl_applications
+    $sqlInsert = 'INSERT INTO tbl_applications (business_name, owner, contact_number, gmail, region, province, city, street, permit, menu, business_img, client_id, status) 
+               VALUES (:business_name, :owner, :contact_number, :gmail, :region, :province, :city, :street, :permit, :menu, :business_img, :client_id, :status)';
+
+    $stmtInsert = $DB_con->prepare($sqlInsert);
+    $stmtInsert->bindParam(':business_name', $business_name, PDO::PARAM_STR);
+    $stmtInsert->bindParam(':owner', $owner, PDO::PARAM_STR);
+    $stmtInsert->bindParam(':contact_number', $contact_number, PDO::PARAM_STR);
+    $stmtInsert->bindParam(':gmail', $gmail, PDO::PARAM_STR);
+    $stmtInsert->bindParam(':region', $region, PDO::PARAM_STR);
+    $stmtInsert->bindParam(':province', $province, PDO::PARAM_STR);
+    $stmtInsert->bindParam(':city', $city, PDO::PARAM_STR);
+    $stmtInsert->bindParam(':street', $street, PDO::PARAM_STR);
+    $stmtInsert->bindParam(':permit', $permit, PDO::PARAM_STR);
+    $stmtInsert->bindParam(':menu', $menu, PDO::PARAM_STR);
+    $stmtInsert->bindParam(':business_img', $business_img, PDO::PARAM_STR);
+    $stmtInsert->bindParam(':client_id', $client_id, PDO::PARAM_INT);
+    $stmtInsert->bindParam(':status', $status, PDO::PARAM_INT);
+
+    // Execute the insert statement
+    try {
+        $stmtInsert->execute();
+        // echo 'Application successfully recorded in the database.';
+    } catch (PDOException $e) {
+        echo 'Error: ' . $e->getMessage();
+    }
+
+
+    // // EMAIL
 
 
 
-    $email = 'lucaterspot@gmail.com';
+    $email = 'jimmycamangon7@gmail.com';
 
     // Create a new PHPMailer instance
     $mail = new PHPMailer(true); // Passing true enables exceptions
@@ -76,30 +163,24 @@ if (
         $mail->setFrom($gmail, $owner); // Sender's email and name
         $mail->addAddress($email, 'Jims'); // Recipient's email and name
 
-        // Attach Business Permit files
-        if (isset($_FILES['permit'])) {
-            foreach ($_FILES['permit']['tmp_name'] as $key => $tmp_name) {
-                if ($_FILES['permit']['error'][$key] == UPLOAD_ERR_OK) {
-                    $mail->addAttachment($tmp_name, $_FILES['permit']['name'][$key]);
-                }
+        // Attach Business Permit files from client-uploads
+        if (!empty($permitPaths)) {
+            foreach ($permitPaths as $permitPath) {
+                $mail->addAttachment($permitPath);
             }
         }
 
-        // Attach Menu files
-        if (isset($_FILES['menu'])) {
-            foreach ($_FILES['menu']['tmp_name'] as $key => $tmp_name) {
-                if ($_FILES['menu']['error'][$key] == UPLOAD_ERR_OK) {
-                    $mail->addAttachment($tmp_name, $_FILES['menu']['name'][$key]);
-                }
+        // Attach Menu files from client-uploads
+        if (!empty($menuPaths)) {
+            foreach ($menuPaths as $menuPath) {
+                $mail->addAttachment($menuPath);
             }
         }
 
-        // Attach Business Image files
-        if (isset($_FILES['business_img'])) {
-            foreach ($_FILES['business_img']['tmp_name'] as $key => $tmp_name) {
-                if ($_FILES['business_img']['error'][$key] == UPLOAD_ERR_OK) {
-                    $mail->addAttachment($tmp_name, $_FILES['business_img']['name'][$key]);
-                }
+        // Attach Business Image files from client-uploads
+        if (!empty($businessImgPaths)) {
+            foreach ($businessImgPaths as $imgPath) {
+                $mail->addAttachment($imgPath);
             }
         }
 
@@ -113,9 +194,9 @@ if (
         <div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6;">
             <p>Dear Admin,</p>
 
-            <p>I hope this message finds you well. My name is ' . htmlspecialchars($owner) . ', and I am the owner of ' . htmlspecialchars($business_name) . '. I am writing to formally submit my application to join your platform as a vendor. Below are the details of my business:</p>
+                <p>I hope this message finds you well. My name is ' . htmlspecialchars($owner) . ', and I am the owner of ' . htmlspecialchars($business_name) . '. I am writing to formally submit my application to join your platform as a vendor. Below are the details of my business:</p>
 
-            <p>
+                <p>
                 <strong>Business Name:</strong> ' . htmlspecialchars($business_name) . '<br>
                 <strong>Owner:</strong> ' . htmlspecialchars($owner) . '<br>
                 <strong>Contact Number:</strong> ' . htmlspecialchars($contact_number) . '<br>
@@ -123,11 +204,11 @@ if (
                 <strong>Location:</strong> ' . htmlspecialchars($street) . ', ' . htmlspecialchars($city) . ', ' . htmlspecialchars($province) . ', ' . htmlspecialchars($region) . '<br>
             </p>
 
-            <p>Attached to this email are copies of our Business Permit, Menu, and some images related to our business. We believe that our offerings will be a valuable addition to your platform, and we are excited about the possibility of partnering with you.</p>
+                <p>Attached to this email are copies of our Business Permit, Menu, and some images related to our business. We believe that our offerings will be a valuable addition to your platform, and we are excited about the possibility of partnering with you.</p>
 
-            <p>Thank you for considering our application. Please feel free to contact me at ' . htmlspecialchars($contact_number) . ' or via email at ' . htmlspecialchars($gmail) . ' if you require any additional information.</p>
+                <p>Thank you for considering our application. Please feel free to contact me at ' . htmlspecialchars($contact_number) . ' or via email at ' . htmlspecialchars($gmail) . ' if you require any additional information.</p>
 
-            <p>Best regards,</p>
+                <p>Best regards,</p>
             <p>' . htmlspecialchars($owner) . '<br>' . htmlspecialchars($business_name) . '</p>
         </div>
     </body>
@@ -137,7 +218,7 @@ if (
 
         // Send email
         $mail->send();
-        echo 'Message has been sent';
+        // echo 'Message has been sent';
     } catch (Exception $e) {
         echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
     }
