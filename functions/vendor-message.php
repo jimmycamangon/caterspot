@@ -144,7 +144,7 @@ if (
 
 
 
-    $email = 'jimmycamangon7@gmail.com';
+    $email = 'lucaterspot@gmail.com';
 
     // Create a new PHPMailer instance
     $mail = new PHPMailer(true); // Passing true enables exceptions
@@ -161,7 +161,7 @@ if (
 
         // Sender and recipient
         $mail->setFrom($gmail, $owner); // Sender's email and name
-        $mail->addAddress($email, 'Jims'); // Recipient's email and name
+        $mail->addAddress($email, 'Admin'); // Recipient's email and name
 
         // Attach Business Permit files from client-uploads
         if (!empty($permitPaths)) {
