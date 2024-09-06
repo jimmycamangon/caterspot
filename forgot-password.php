@@ -148,13 +148,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="container">
                 <div class="row">
 
-                    <div class="col-lg-3 col-md-6 footer-contact">
+                <div class="col-lg-3 col-md-6 footer-contact">
                         <h3>CaterSpot</h3>
                         <p>
-                            Alabang <br>
+                            Sta.Cruz Laguna, <br>
                             Philippines <br><br>
-                            <strong>Phone:</strong> +63 0000 0000 00<br>
-                            <strong>Email:</strong> test@gmail.com<br>
+                            <strong>Phone:</strong> +639512780673<br>
+                            <strong>Email:</strong> lucaterspot@gmail.com<br>
                         </p>
                     </div>
 
@@ -163,9 +163,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <ul>
                             <li><i class="bx bx-chevron-right"></i> <a href="#hero">Home</a></li>
                             <li><i class="bx bx-chevron-right"></i> <a href="#about">About us</a></li>
+                            <li><i class="bx bx-chevron-right"></i> <a href="#vendor">Become our vendor</a></li>
                             <li><i class="bx bx-chevron-right"></i> <a href="#contact">Contact</a></li>
-                            <li><i class="bx bx-chevron-right"></i> <a href="#">Terms of service</a></li>
-                            <li><i class="bx bx-chevron-right"></i> <a href="#">Privacy policy</a></li>
+                            <!-- <li><i class="bx bx-chevron-right"></i> <a href="#">Terms of service</a></li>
+                            <li><i class="bx bx-chevron-right"></i> <a href="#">Privacy policy</a></li> -->
                         </ul>
                     </div>
 

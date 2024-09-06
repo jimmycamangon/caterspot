@@ -564,6 +564,7 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <ul>
                             <li><i class="bx bx-chevron-right"></i> <a href="#hero">Home</a></li>
                             <li><i class="bx bx-chevron-right"></i> <a href="#about">About us</a></li>
+                            <li><i class="bx bx-chevron-right"></i> <a href="#vendor">Become our vendor</a></li>
                             <li><i class="bx bx-chevron-right"></i> <a href="#contact">Contact</a></li>
                             <!-- <li><i class="bx bx-chevron-right"></i> <a href="#">Terms of service</a></li>
                             <li><i class="bx bx-chevron-right"></i> <a href="#">Privacy policy</a></li> -->

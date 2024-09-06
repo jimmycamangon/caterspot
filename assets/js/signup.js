@@ -150,7 +150,7 @@ $(document).ready(function () {
             }).showToast();
 
             setTimeout(function () {
-              window.location.href = "index.php";
+              window.location.href = "./";
             }, 2000);
           }
         },
