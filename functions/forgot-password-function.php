@@ -124,7 +124,7 @@ function forgot_password($DB_con, $email)
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
     $mail->Username = 'lucaterspot@gmail.com';
-    $mail->Password = 'swab lgbd bufz sagd';
+    $mail->Password = 'qaat pzqc chtx ffvx';
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
 
@@ -236,7 +236,7 @@ function resend_link($DB_con, $email)
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
     $mail->Username = 'lucaterspot@gmail.com';
-    $mail->Password = 'swab lgbd bufz sagds';
+    $mail->Password = 'qaat pzqc chtx ffvx';
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
 

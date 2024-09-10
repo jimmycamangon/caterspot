@@ -39,7 +39,7 @@ if (isset($_POST['client_id']) && isset($_POST['status'])) {
                 $mail2->Host = 'smtp.gmail.com';
                 $mail2->SMTPAuth = true;
                 $mail2->Username = 'lucaterspot@gmail.com';
-                $mail2->Password = 'swab lgbd bufz sagd';
+                $mail2->Password = 'qaat pzqc chtx ffvx';
                 $mail2->SMTPSecure = 'tls';
                 $mail2->Port = 587;
 

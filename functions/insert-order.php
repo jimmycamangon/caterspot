@@ -127,7 +127,7 @@ if ($stmt1->execute()) {
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
         $mail->Username = 'lucaterspot@gmail.com';
-        $mail->Password = 'swab lgbd bufz sagd';
+        $mail->Password = 'qaat pzqc chtx ffvx';
         $mail->SMTPSecure = 'tls';
         $mail->Port = 587;
 
@@ -302,7 +302,7 @@ if ($stmt1->execute()) {
             $mail2->Host = 'smtp.gmail.com';
             $mail2->SMTPAuth = true;
             $mail2->Username = 'lucaterspot@gmail.com';
-            $mail2->Password = 'swab lgbd bufz sagd';
+            $mail2->Password = 'qaat pzqc chtx ffvx';
             $mail2->SMTPSecure = 'tls';
             $mail2->Port = 587;
 

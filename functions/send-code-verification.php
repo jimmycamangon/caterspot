@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
     $mail->Username = 'lucaterspot@gmail.com';
-    $mail->Password = 'swab lgbd bufz sagd';
+    $mail->Password = 'qaat pzqc chtx ffvx';
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
 
@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $mail->addAddress($email);
     $mail->isHTML(true);
 
-    $mail->Subject = 'Verification code for Caterspot';
+    $mail->Subject = 'Verification code for Caterspot'; 
     $mail->Body = '
     <html>
     <head>

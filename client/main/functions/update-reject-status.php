@@ -49,7 +49,7 @@ if (isset($_POST['transactionNo']) && isset($_POST['status']) && isset($_POST['r
                 $mail2->Host = 'smtp.gmail.com';
                 $mail2->SMTPAuth = true;
                 $mail2->Username = 'lucaterspot@gmail.com';
-                $mail2->Password = 'swab lgbd bufz sagd';
+                $mail2->Password = 'qaat pzqc chtx ffvx';
                 $mail2->SMTPSecure = 'tls';
                 $mail2->Port = 587;
 
