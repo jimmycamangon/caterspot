@@ -115,6 +115,12 @@
                             us at <a href="mailto:lucaterspot@gmail.com">lucaterspot@gmail.com</a>.</p>
                         <p>Thank you for choosing to be a part of our catering network. We look forward to a successful
                             partnership!</p>
+                        <hr>
+                        <center>
+                            <button type="button" class="btn-get-vendor" data-toggle="modal" data-target="#vendorModal"
+                                style="width:30%"> Apply Now
+                            </button>
+                        </center>
                     </div>
                 </div>
             </div>
@@ -136,6 +142,95 @@
         <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i
                 class="bi bi-arrow-up-short"></i></a>
 
+
+
+        <!-- Vendor Modal -->
+        <div class="modal fade" id="vendorModal" tabindex="-1" role="dialog" aria-labelledby="vendorModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content" id="firstDisplay">
+                    <div class="modal-header d-flex justify-content-between">
+                        <h5 class="modal-title" id="vendorModalLabel">Application Form</h5>
+                        <i class='bx bx-x close' style="font-size:30px; cursor:pointer;" data-dismiss="modal"
+                            aria-label="Close"></i>
+                    </div>
+
+                    <div class="modal-body">
+                        <form id="vendorForm" enctype="multipart/form-data">
+                            <div id="vendor_message"></div>
+
+                            <!-- Vendor form -->
+                            <div class="form-group">
+                                <label for="business_name">Business Name: <span class="required_info">*</span></label>
+                                <input type="text" class="form-control" id="business_name" name="business_name">
+                            </div>
+                            <div class="form-group">
+                                <label for="owner">Owner: <span class="required_info">*</span></label>
+                                <input type="text" class="form-control" id="owner" name="owner">
+                            </div>
+                            <div class="form-group">
+                                <label for="contact_number">Contact Number: <span class="required_info">*</span></label>
+                                <input type="number" class="form-control" id="contact_number" name="contact_number">
+                            </div>
+                            <div class="form-group">
+                                <label for="gmail">Gmail Account: <span class="required_info">*</span></label>
+                                <input type="email" class="form-control" id="gmail" name="gmail">
+                            </div>
+                            <label for="location">Location:</label>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Region <span class="required_info">*</span></label>
+                                        <select class="form-control" id="edit_region" name="edit_region">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Province <span class="required_info">*</span></label>
+                                        <select class="form-control" id="edit_province" name="edit_province">
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>City/Municipality <span class="required_info">*</span></label>
+                                        <select class="form-control" id="edit_city" name="edit_city">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Street <span class="required_info">*</span></label>
+                                        <input type="text" class="form-control" id="street" name="street">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="permit">Business Permit: <span class="required_info">*</span></label>
+                                <input type="file" class="form-control" id="permit" name="permit[]" multiple
+                                    accept=".pdf">
+                            </div>
+                            <div class="form-group">
+                                <label for="menu">Menu: <span class="required_info">*</span></label>
+                                <input type="file" class="form-control" id="menu" name="menu[]" multiple accept=".pdf">
+                            </div>
+                            <div class="form-group">
+                                <label for="business_img">Image: <span class="required_info">*</span></label>
+                                <input type="file" class="form-control" id="business_img" name="business_img[]" multiple
+                                    accept=".jpg, .jpeg, .png">
+                            </div>
+
+                            <button type="submit" class="btn-get-main my-4" style="width:100% !important;"
+                                id="verificationButton">Submit Form</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Vendor JS Files -->
         <script src="../assets/vendor/purecounter/purecounter_vanilla.js"></script>
         <script src="../assets/vendor/aos/aos.js"></script>
@@ -154,8 +249,10 @@
 
         <!-- Template Main JS File -->
         <script src="../assets/js/main.js"></script>
-        <script src="login.js"></script>
-        <script src="showpassword.js"></script>
+        <script src="vendor-message.js"></script>
+        <script src="fetch-philadd.js"></script>
+
+
 
 </body>
 

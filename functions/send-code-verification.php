@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $mail->addAddress($email);
     $mail->isHTML(true);
 
-    $mail->Subject = 'Verification code for Caterspot'; 
+    $mail->Subject = 'Verification code for Caterspot';
     $mail->Body = '
     <html>
     <head>
@@ -143,8 +143,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <body>
     <div class="code-container">
         <h1>Verify your email</h1>
-        <p>Please use the following verification code:</p>
-                <p class="verification-code "> ' . htmlspecialchars($code) . '</p>
+        <p>Thank you for signing up with Caterspot!</p>
+        <p>Please use the following verification code to verify your email:</p>
+        <p class="verification-code"> ' . htmlspecialchars($code) . '</p>
     </div>
     </body>
     </html>

@@ -35,7 +35,7 @@ if (isset($_SESSION['user_id'])) {
     if ($user) {
         // Access client data
         $Username = $user['username'];
-        $Userfullname = $user['firstname'] . ' ' . $user['lastname'];
+        $Userfullname = ucwords($user['firstname']) . ' ' . ucwords($user['lastname']);
         $Userfirstname = $user['firstname'];
         $Userlastname = $user['lastname'];
         $Useremail = $user['email'];

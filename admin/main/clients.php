@@ -90,7 +90,7 @@ redirectToLogin();
                                             <td>
                                                 <center><img
                                                         src="../../assets/img/client-images/<?php echo $client['client_image']; ?>"
-                                                        class="image-table" alt="No Image"></center>
+                                                        class="image-table" alt="No Uploaded Image"></center>
                                             </td>
                                             <td>
                                                 <?php echo $client['contact']; ?>
@@ -134,16 +134,29 @@ redirectToLogin();
 
                     <div class="form-group">
                         <label for="cater_name">Catering Name:</label>
-                        <input type="text" class="form-control" id="cater_name" name="cater_name">
+                        <select class="form-control" id="cater_name" name="cater_name">
+                            <option value="" selected disabled>Select a Catering Name</option>
+                            <?php
+                            // Fetch catering names from the database
+                            $sql = "SELECT business_name FROM tbl_applications WHERE status = 'Approved'";
+                            $result = $DB_con->query($sql);
+                            if ($result->rowCount() > 0) {
+                                while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                                    echo '<option value="' . $row['business_name'] . '">' . $row['business_name'] . '</option>';
+                                }
+                            }
+                            ?>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="email">Email:</label>
-                        <input type="text" class="form-control" id="email" name="email">
+                        <input type="text" class="form-control" id="email" name="email" disabled>
                     </div>
                     <div class="form-group">
                         <label for="password">Temporary Password:</label>
                         <input type="password" class="form-control" id="password" name="password">
                     </div>
+
                     <br>
                     <div class="form-group">
                         <input type="submit" class="btn-get-main  py-2" value="Add" style="width:100% !important;"

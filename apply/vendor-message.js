@@ -32,27 +32,23 @@ $(document).ready(function () {
 
     // If all fields are filled, make AJAX request
     $.ajax({
-      url: "functions/vendor-message.php",
+      url: "vendor-message.php",
       type: "POST",
       data: formData,
       processData: false, // Important!
       contentType: false, // Important!
       success: function (response) {
-        // Display success message
+        // Display success message with email instruction
         $("#vendor_message").html(
-          '<div class="alert alert-success">Application Form has been sent successfully!</div>'
+          "<div class='alert alert-success'>Application Form has been sent successfully! <br><b>Please check your email for verification and approval status.</b></div>"
         );
         // Clear form fields
         $("#vendorForm").trigger("reset");
       },
       error: function (xhr, status, error) {
         // Display error message
-        $("#vendor_message").html(
-          '<div class="alert alert-danger">Error: ' + error + "</div>"
-        );
+        $("#vendor_message").html("<div>Error: " + error + "</div>");
       },
     });
   });
 });
-
-

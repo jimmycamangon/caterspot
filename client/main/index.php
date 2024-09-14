@@ -216,6 +216,36 @@ $status_counts = array_merge([
             <?php require_once 'includes/footer.php'; ?>
         </div>
     </div>
+
+
+
+    <!-- Pop up Notification -->
+    <div class="modal fade" id="notifyModal" tabindex="-1" role="dialog"
+    aria-labelledby="confirmationCompleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationCompleteModalLabel">
+                    Important Notice
+                </h5>
+                <i class="fa-solid fa-xmark" style="font-size:20px; cursor:pointer;" data-dismiss="modal"
+                    aria-label="Close"></i>
+            </div>
+            <div class="modal-body">
+                <p>For security purposes, please update your temporary password in your profile settings at your earliest convenience.</p>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-get-main" data-dismiss="modal">
+                    <a href="profile.php" style="color:white;text-decoration:none;">Update Now</a>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
     <script src="../vendor/js/scripts.js"></script>
@@ -227,6 +257,41 @@ $status_counts = array_merge([
 
 
     <script src="../vendor/js/datatables-simple-demo.js"></script>
+    <script>
+        // Check if the client has not been notified (isNotified = 0)
+        document.addEventListener("DOMContentLoaded", function () {
+            <?php
+            // Fetch the current client's notification status
+            $client_id = $_SESSION['client_id']; // Assuming client_id is stored in session after login
+            $stmt = $DB_con->prepare("SELECT isNotified FROM tbl_clients WHERE client_id = :client_id");
+            $stmt->bindParam(':client_id', $client_id);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($result && $result['isNotified'] == 0): ?>
+                // Show the modal automatically
+                var notifyModal = new bootstrap.Modal(document.getElementById('notifyModal'));
+                notifyModal.show();
+
+                // Update the isNotified status using AJAX
+                fetch('functions/update-notification-status.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ client_id: <?php echo $client_id; ?> })
+                }).then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Notification status updated successfully.');
+                        } else {
+                            console.log('Failed to update notification status.');
+                        }
+                    }).catch(error => console.error('Error:', error));
+            <?php endif; ?>
+        });
+    </script>
+
 </body>
 
 </html>

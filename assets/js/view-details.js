@@ -62,9 +62,21 @@ document.addEventListener("DOMContentLoaded", function () {
     // Get the selected event date
     var eventDate = document.getElementById("event_date").value;
 
+    var warningMessage = document.getElementById("dateWarning"); // Warning message element
     // Calculate the date one month from now
     var oneMonthFromNow = new Date();
     oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+
+    var today = new Date();
+    today.setHours(0, 0, 0, 0); // Set time to 00:00:00 for accurate comparison
+
+
+    // Check if the selected event date is a past date
+    if (new Date(eventDate) < today) {
+      warningMessage.style.display = "flex"; // Show the warning message
+    } else {
+      warningMessage.style.display = "none"; // Hide the warning message
+    }
 
     // Check if the input field is empty, no checkbox is checked, event date is not selected, or event date is not at least one month in advance
     if (
@@ -212,7 +224,6 @@ document
 
       document.getElementById("initial_payment").value = 0;
       document.getElementById("balance").value = 0;
-
     } else {
       document.getElementById("down_payment_input_wrapper").style.display =
         "block";
@@ -257,18 +268,15 @@ document
       // If validation passes, submit the form
       updateSelectedItemsDisplay();
 
-      
-
       var pay = document.getElementById("payment_selection").value;
-      
-      if(pay === "Full Payment") {
-       document.getElementById("initial_payment").value = 0;
-       document.getElementById("balance").value = 0;
+
+      if (pay === "Full Payment") {
+        document.getElementById("initial_payment").value = 0;
+        document.getElementById("balance").value = 0;
       } else {
         validateInitial();
       }
       enableInputsBeforeSubmit();
-      
     } else {
       bookBtn.disabled = false; // Disable the submit button
       bookBtn.style.opacity = 1; // Change button opacity
@@ -286,7 +294,6 @@ function validateForm() {
   var paymentMethod = document.getElementById("payment_method").value; // Get selected payment method
   // Initialize flag to check for errors
   var isValid = true;
-
 
   // Check if any field is empty
   if (
@@ -739,31 +746,27 @@ function validateInitial() {
       "<div class='item'><span style='font-weight:bold'>Balance: </span><span class='amount' style='font-weight:bold'>₱ " +
       balance.toFixed(2) +
       "</span></div>";
-
   } else {
     // Update the initial amount display
     var downpayment = enteredValue; // Use enteredValue as the initial amount
-    
-    if(downpayment > 0) {
+
+    if (downpayment > 0) {
       var balance = total - enteredValue; // Use enteredValue as the initial amount
       document.getElementById("downpayment-display").innerHTML =
         "<hr><div class='item'><span>Initial Payment: </span><span class='amount'>₱ " +
         downpayment.toFixed(2) +
         "</span></div>";
-  
+
       document.getElementById("balance-display").innerHTML =
         "<div class='item'><span style='font-weight:bold'>Balance: </span><span class='amount' style='font-weight:bold'>₱ " +
         balance.toFixed(2) +
         "</span></div>";
-  
+
       document.getElementById("initial_payment").value = downpayment.toFixed(2);
       document.getElementById("balance").value = balance.toFixed(2);
     } else {
-
       // var ini = document.getElementById("downpayment-display").value;
-
       // document.getElementById("initial_payment").value = ini;
     }
-
   }
 }

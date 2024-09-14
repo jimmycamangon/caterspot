@@ -135,7 +135,7 @@ $package_names = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </section><!-- End Breadcrumbs -->
 
         <section id="hero" class="d-flex align-items-center">
-        <!-- style="height:auto !important;" -->
+            <!-- style="height:auto !important;" -->
 
             <div class="container" style="padding: auto !important; height:auto !important;">
 
@@ -298,11 +298,9 @@ $package_names = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="col-lg-4">
                         <div class="package-info">
                             <h3>Reservation Details:</h3>
-                            <span
-                                style="font-size:12px;font-style:italic;color:#2487ce;display:flex;align-items:center;">Select
-                                a
-                                date at least one month in advance. No dates within
-                                one month before the event.</span>
+                            <div class="alert alert-danger" id="dateWarning"
+                                style="font-size:12px;display:none;">Please select a date at least one month in advance. 
+                                Dates in the past and within one month from today are not allowed.</div>
                             <div class="form-group">
                                 <div class="row">
                                     <div class="col">
@@ -484,7 +482,8 @@ $package_names = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <div class="form-group">
                                     <label for="location">Location:</label>
                                     <input type="text" class="form-control" id="location" name="location"
-                                        value="<?php echo $UserProvince . ' ' . $UserCity . ' ' . $Userlocation; ?>" disabled>
+                                        value="<?php echo $UserProvince . ' ' . $UserCity . ' ' . $Userlocation; ?>"
+                                        disabled>
                                 </div>
                                 <div class="form-group">
                                     <label for="payment_method">Payment Method:<i class='bx bxs-info-circle'

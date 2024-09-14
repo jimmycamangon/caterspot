@@ -33,6 +33,19 @@ $row2 = $stmt2->fetch(PDO::FETCH_ASSOC);
 // Get the user count
 $client_count = $row2['client_count'];
 
+// ======
+
+$sql3 = "SELECT COUNT(*) AS application_count FROM tbl_applications";
+
+// Prepare the statement
+$stm3 = $DB_con->prepare($sql3);
+// Execute the query
+$stm3->execute();
+// Fetch the result
+$row3 = $stm3->fetch(PDO::FETCH_ASSOC);
+// Get the user count
+$application_count = $row3['application_count'];
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -99,6 +112,19 @@ $client_count = $row2['client_count'];
                                 </div>
                                 <div class="card-footer d-flex align-items-center justify-content-between">
                                     <a class="small text-white stretched-link" href="clients.php">View Details</a>
+                                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card bg-warning text-white mb-4">
+                                <div class="card-body">
+                                    <h4>
+                                        <?php echo $application_count ?>
+                                    </h4> Total Applications
+                                </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <a class="small text-white stretched-link" href="applications.php">View Details</a>
                                     <div class="small text-white"><i class="fas fa-angle-right"></i></div>
                                 </div>
                             </div>

@@ -7,6 +7,13 @@ $stmt = $DB_con->prepare("SELECT cater_name, cater_description, client_id FROM t
 $stmt->execute();
 $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Number of items to display initially
+$initialCount = 3;
+
+// Split catering services into initial and additional arrays
+$initialCatering = array_slice($cateringServices, 0, $initialCount);
+$additionalCatering = array_slice($cateringServices, $initialCount);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -130,10 +137,6 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             <?php } else { ?>
                 <div class="text-center">
-                    <h2>Hi
-                        <?php echo $Username; ?>
-
-                    </h2>
                     <h1>Explore Our Catering Services</h1>
                     <p>Choose from a variety of catering options tailored to your needs</p>
                 </div>
@@ -141,21 +144,44 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
             <div class="row icon-boxes flex justify-content-evenly">
-                <?php foreach ($cateringServices as $catering): ?>
+                <!-- Display initial catering items -->
+                <?php foreach ($initialCatering as $catering): ?>
                     <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-4 mb-lg-0" data-aos="zoom-in"
                         data-aos-delay="200">
                         <div class="icon-box">
-                            <h4 class="title"><a href=""><?php echo $catering['cater_name']; ?></a></h4>
+                            <h4 class="title"><a href=""><?php echo htmlspecialchars($catering['cater_name']); ?></a></h4>
                             <p class="description py-2">
                                 <?php echo !empty($catering['cater_description']) ? $catering['cater_description'] : "No Description Provided"; ?>
                             </p>
-                            <a href="view.php?cater=<?php echo $catering['cater_name']; ?>&id=<?php echo $catering['client_id']; ?>"
-                                class="btn-learn-more">View
-                                Services</a>
+                            <a href="view.php?cater=<?php echo urlencode($catering['cater_name']); ?>&id=<?php echo urlencode($catering['client_id']); ?>"
+                                class="btn-learn-more">View Services</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
+
+                <!-- Hidden additional catering items -->
+                <?php if (!empty($additionalCatering)): ?>
+                    <?php foreach ($additionalCatering as $catering): ?>
+                        <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-4 mb-lg-0 additional-catering"
+                            data-aos="zoom-in" data-aos-delay="200" style="display: none !important;">
+                            <div class="icon-box">
+                                <h4 class="title"><a href=""><?php echo htmlspecialchars($catering['cater_name']); ?></a></h4>
+                                <p class="description py-2">
+                                    <?php echo !empty($catering['cater_description']) ? $catering['cater_description'] : "No Description Provided"; ?>
+                                </p>
+                                <a href="view.php?cater=<?php echo urlencode($catering['cater_name']); ?>&id=<?php echo urlencode($catering['client_id']); ?>"
+                                    class="btn-learn-more">View Services</a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
+
+            <!-- See more services button -->
+            <?php if (!empty($additionalCatering)): ?>
+                <center><button id="see-more-btn" class="btn-get-started" style="border: none;">See more services</button></center>
+            <?php endif; ?>
+
 
         </div>
     </section>
@@ -384,13 +410,9 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 Sign up today and become a part of our premier catering network!</p>
                         </div>
                         <br>
-                        <center><button type="button" class="btn-get-vendor" data-toggle="modal"
-                                data-target="#vendorModal" style="width:30%">
-                                Apply Now
-                            </button>
-                            <br>
-                            <br>
-                            <a href="apply/" style="text-decoration: underline !important;">How to apply?</a>
+                        <center><a href="apply/" style="text-decoration: underline !important;"><button type="button"
+                                    class="btn-get-vendor" style="width:30%"> Get Started
+                                </button></a>
                         </center>
 
                     </div>
@@ -403,93 +425,6 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
         </section>
-
-        <!-- Vendor Modal -->
-        <div class="modal fade" id="vendorModal" tabindex="-1" role="dialog" aria-labelledby="vendorModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content" id="firstDisplay">
-                    <div class="modal-header d-flex justify-content-between">
-                        <h5 class="modal-title" id="vendorModalLabel">Application Form</h5>
-                        <i class='bx bx-x close' style="font-size:30px; cursor:pointer;" data-dismiss="modal"
-                            aria-label="Close"></i>
-                    </div>
-
-                    <div class="modal-body">
-                        <form id="vendorForm" enctype="multipart/form-data">
-                            <div id="vendor_message"></div>
-
-                            <!-- Vendor form -->
-                            <div class="form-group">
-                                <label for="business_name">Business Name:</label>
-                                <input type="text" class="form-control" id="business_name" name="business_name">
-                            </div>
-                            <div class="form-group">
-                                <label for="owner">Owner:</label>
-                                <input type="text" class="form-control" id="owner" name="owner">
-                            </div>
-                            <div class="form-group">
-                                <label for="contact_number">Contact Number:</label>
-                                <input type="number" class="form-control" id="contact_number" name="contact_number">
-                            </div>
-                            <div class="form-group">
-                                <label for="gmail">Gmail Account:</label>
-                                <input type="email" class="form-control" id="gmail" name="gmail">
-                            </div>
-                            <label for="location">Location:</label>
-                            <div class="row">
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label>Region</label>
-                                        <select class="form-control" id="edit_region" name="edit_region">
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label>Province</label>
-                                        <select class="form-control" id="edit_province" name="edit_province">
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label>City/Municipality</label>
-                                        <select class="form-control" id="edit_city" name="edit_city">
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label>Street</label>
-                                        <input type="text" class="form-control" id="street" name="street">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="permit">Business Permit:</label>
-                                <input type="file" class="form-control" id="permit" name="permit[]" multiple
-                                    accept=".pdf, .doc, .docx, .jpg, .jpeg, .png">
-                            </div>
-                            <div class="form-group">
-                                <label for="menu">Menu:</label>
-                                <input type="file" class="form-control" id="menu" name="menu[]" multiple
-                                    accept=".pdf, .doc, .docx, .jpg, .jpeg, .png">
-                            </div>
-                            <div class="form-group">
-                                <label for="business_img">Image:</label>
-                                <input type="file" class="form-control" id="business_img" name="business_img[]" multiple
-                                    accept=".jpg, .jpeg, .png">
-                            </div>
-                            <button type="submit" class="btn-get-main my-4" style="width:100% !important;"
-                                id="verificationButton">Submit Form</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- End Vendor Section -->
         <!-- ======= Contact Section ======= -->
@@ -629,7 +564,6 @@ $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="assets/js/login.js"></script>
     <script src="assets/js/showpassword.js"></script>
     <script src="assets/js/verification-code.js"></script>
-    <script src="assets/js/vendor-message.js"></script>
     <script src="assets/js/fetch-philadd.js"></script>
 
 
