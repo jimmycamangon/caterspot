@@ -302,14 +302,3 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-
-document.getElementById('see-more-btn').addEventListener('click', function() {
-  // Show the additional catering items
-  var additionalItems = document.querySelectorAll('.additional-catering');
-  additionalItems.forEach(function(item) {
-      item.style.display = 'flex'; // Change to flex to maintain layout
-  });
-
-  // Hide the button after it's clicked
-  this.style.display = 'none';
-});

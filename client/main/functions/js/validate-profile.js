@@ -5,12 +5,9 @@ $(document).ready(function () {
     var username = $("#edit_username").val();
     var email = $("#edit_email").val();
     var contact = $("#contact").val();
-    var newpass = $("#newpass").val();
-    var confirmpass = $("#confirmpass").val();
     // Add other fields as needed
 
     if (client_id !== "" && email !== "" && username !== "" && contact !== "") {
-      if (newpass === confirmpass) {
         // AJAX call to update user profile
         $.ajax({
           url: "../main/functions/update-profile.php",
@@ -19,8 +16,7 @@ $(document).ready(function () {
             client_id: client_id,
             email: email,
             username: username,
-            contact: contact,
-            newpass: newpass,
+            contact: contact
           },
           dataType: "json",
           success: function (data) {
@@ -49,12 +45,7 @@ $(document).ready(function () {
             console.error(xhr.responseText);
           },
         });
-      } else {
-        // Display a danger alert if new password and confirm password don't match
-        $("#message").html(
-          '<div class="alert alert-danger" role="alert">New password and Confirm password are not matched</div>'
-        );
-      }
+
     } else {
       // Display a danger alert if any required field is empty
       $("#message").html(

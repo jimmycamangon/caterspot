@@ -17,10 +17,14 @@ if (isset($_POST['reset_password'])) {
     } else if (strlen(trim($_POST['password'])) < 8) {
         $error = "<div class='alert alert-danger' role='alert'>Password must be at least 8 characters long</div>";
     } else if ($password != $confirm_password) {
-        $error = "<div class='alert alert-danger' role='alert'>Password do not match.</div>";
+        $error = "<div class='alert alert-danger' role='alert'>Passwords do not match</div>";
     } else {
         // Reset password if it meets all criteria
-        if (reset_password($DB_con, $token, $password)) {
+        $result = reset_password($DB_con, $token, $password);
+
+        if ($result === 'same_password') {
+            $error = "<div class='alert alert-danger' role='alert'>You cannot reuse your old password. Please choose a different one.</div>";
+        } else if ($result) {
             // Password reset successfully, redirect with success message
             $_SESSION['PASSWORD_RESET'] = true;
             header("Location: index.php?reset=success");
@@ -29,8 +33,8 @@ if (isset($_POST['reset_password'])) {
             $error = "<div class='alert alert-danger' role='alert'>Failed to Reset Password</div>";
         }
     }
-
 }
+
 
 // Function to check if a password meets the strength criteria
 function reset_password($DB_con, $token, $password)
@@ -54,26 +58,31 @@ function reset_password($DB_con, $token, $password)
         $user = $stmt->fetch();
 
         if ($user) {
-            // Update teacher's password
+            // Compare the new password with the existing password
+            if (password_verify($password, $user['password'])) {
+                // Password is the same as the old one, return false with an error message
+                return 'same_password';
+            }
+
+            // Update user's password
             $stmt = $DB_con->prepare("UPDATE tbl_users SET password = :password WHERE email = :email");
+            $stmt->bindValue(':password', $hashed_password);
+            $stmt->bindValue(':email', $email);
+            $stmt->execute();
+
+            // Delete used token from the database
+            $stmt = $DB_con->prepare("DELETE FROM tblforgot_password_reset_tokens WHERE token = :token");
+            $stmt->bindValue(':token', $token);
+            $stmt->execute();
+
+            return true;
         }
-
-        // Bind values and execute the update query
-        $stmt->bindValue(':password', $hashed_password);
-        $stmt->bindValue(':email', $email);
-        $stmt->execute();
-
-        // Delete used token from the database
-        $stmt = $DB_con->prepare("DELETE FROM tblforgot_password_reset_tokens WHERE token = :token");
-        $stmt->bindValue(':token', $token);
-        $stmt->execute();
-
-        return true;
     } else {
         // Token is invalid
         return false;
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -145,8 +154,9 @@ function reset_password($DB_con, $token, $password)
                 <!-- Picture on the left side -->
                 <div class="col-md-6 col-lg-6 d-flex align-items-stretch mb-5 mb-lg-0" data-aos="zoom-in"
                     data-aos-delay="200">
-                    <img src="assets/img/Login/reset-password.png" class="img-fluid" alt="Login Image">
+                    <img src="assets/img/Login/reset-password.png" class="img-fluid img-static" alt="Login Image">
                 </div>
+
                 <!-- Form container on the right side -->
                 <div class="col-md-124 col-lg-6 " data-aos="zoom-in" data-aos-delay="400">
                     <div class="form-container">
@@ -160,17 +170,48 @@ function reset_password($DB_con, $token, $password)
                                 </div>
                                 <div class="form-group">
                                     <label for="password" class="py-2">New Password:</label>
-                                    <input type="hidden" name="token" value="<?php echo $_GET['token']; ?>">
-                                    <input type="password" class="form-control" id="password" placeholder="&nbsp;"
-                                        name="password">
+                                    <div class="input-group">
+                                        <input type="hidden" name="token" value="<?php echo $_GET['token']; ?>">
+                                        <input type="password" class="form-control" id="password" placeholder="&nbsp;"
+                                            name="password">
+                                        &nbsp;&nbsp;
+                                        <div class="input-group-append d-none py-2" style="cursor:pointer;"
+                                            id="eyeIconContainerSignup">
+                                            <span class="input-group-text" id="togglePasswordVisibilitySignup">
+                                                <i class='bx bx-show'></i>
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="confirm_password" class="py-2">Confirm Password:</label>
-                                    <input type="password" class="form-control" id="confirm_password"
-                                        placeholder="&nbsp;" name="confirm_password">
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="confirm_password"
+                                            placeholder="&nbsp;" name="confirm_password">
+                                        &nbsp;&nbsp;
+                                        <div class="input-group-append d-none py-2" style="cursor:pointer;"
+                                            id="eyeIconContainerSignupConfirm">
+                                            <span class="input-group-text" id="togglePasswordVisibilitySignup">
+                                                <i class='bx bx-show'></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <small id="passwordLengthMessage"
+                                        style="color: red;display:none;padding-top:10px;">&#9679;
+                                        Password must be
+                                        at least 8 characters long.</small>
+                                    <small id="passwordUppercaseMessage" style="color: red;display:none;">&#9679;
+                                        Password must
+                                        contain at least one uppercase letter.</small>
+                                    <small id="passwordSpecialCharMessage" style="color: red;display:none;"> &#9679;
+                                        Password
+                                        must contain at least one special character.</small>
+                                    <small id="confirmPasswordMessage" style="color: red;display:none;">&#9679;
+                                        Passwords do not
+                                        match.</small>
                                 </div>
                                 <br>
-                                <button type="submit" name="reset_password" class="btn-get-main">Reset
+                                <button type="submit" name="reset_password" id="reset_button" class="btn-get-main">Reset
                                     Password</button><br><br><br>
                             </form>
                         </div>
@@ -266,6 +307,7 @@ function reset_password($DB_con, $token, $password)
 
     <!-- Template Main JS File -->
     <script src="assets/js/main.js"></script>
+    <script src="assets/js/forgot-password.js"></script>
 
 
 

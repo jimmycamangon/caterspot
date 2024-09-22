@@ -19,6 +19,7 @@ redirectToLogin();
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
     <link href="../vendor/css/styles.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <link href="../../assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
     <!-- Google Fonts -->
     <link
         href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
@@ -245,6 +246,80 @@ redirectToLogin();
                         </div>
                     </div>
 
+
+                    <div class="card col-12 col-sm-6 mb-3">
+                        <div class="card-header">
+                            <div class="form-group">
+                                <i class="fa-solid fa-gear"></i>&nbsp;
+                                <b>Change Password</b>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <div id="message_pass"></div>
+                                            <label>New Password</label>
+                                            <div class="input-group">
+                                                <input class="form-control" type="password" name="newpass" id="newpass"
+                                                    id="newpass">
+                                                &nbsp;&nbsp;
+                                                <div class="input-group-append d-none py-2" style="cursor:pointer;"
+                                                    id="eyeIconContainerSignup">
+                                                    <span class="input-group-text" id="togglePasswordVisibilitySignup">
+                                                        <i class='bx bx-show'></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label>Confirm <span class="d-none d-xl-inline">Password</span></label>
+                                            <div class="input-group">
+                                                <input class="form-control" type="password" id="confirmpass"
+                                                    name="confirmpass" id="confirmpass">
+                                                &nbsp;&nbsp;
+                                                <div class="input-group-append d-none py-2" style="cursor:pointer;"
+                                                    id="eyeIconContainerSignupConfirm">
+                                                    <span class="input-group-text" id="togglePasswordVisibilitySignup">
+                                                        <i class='bx bx-show'></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <small id="passwordLengthMessage" style="color: red;display:none;">&#9679;
+                                        Password must
+                                        be at least 13
+                                        characters long.</small><br>
+                                    <small id="passwordUppercaseMessage" style="color: red;display:none;">&#9679;
+                                        Password must
+                                        contain at
+                                        least one
+                                        uppercase letter.</small><br>
+                                    <small id="passwordSpecialCharMessage" style="color: red;display:none;">
+                                        &#9679; Password must contain at
+                                        least one
+                                        special character.</small><br>
+                                    <small id="confirmPasswordMessage" style="color: red;display:none;">&#9679;
+                                        Passwords do
+                                        not
+                                        match.</small>
+                                </div>
+                                <div class="row">
+                                    <div class="col d-flex justify-content-end">
+                                        <button class="btn-get-main" type="submit" id="saveChangesBtnPass">Save
+                                            Changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card mb-4">
                         <div class="card-header">
                             <div class="form-group">
@@ -429,6 +504,7 @@ redirectToLogin();
     </script>
     <script src="functions/js/validate-settings.js"></script>
     <script src="functions/js/edit-fetchimage-bg.js"></script>
+    <script src="functions/js/validate-password.js"></script>
 </body>
 
 </html>

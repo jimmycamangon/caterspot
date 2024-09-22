@@ -124,7 +124,7 @@ function forgot_password($DB_con, $email)
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
     $mail->Username = 'lucaterspot@gmail.com';
-    $mail->Password = 'swab lgbd bufz sagd';
+    $mail->Password = 'qaat pzqc chtx ffvx';
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
 
@@ -191,7 +191,7 @@ function forgot_password($DB_con, $email)
                     <p>Please click the following link to reset your password:</p>
                     <br>
                     <br>
-                    <a href="https://caterspot.online/client/reset-password-page.php?token=' . $token . '">Reset Password</a>
+                    <a href="http://localhost/caterspot/client/reset-password-page.php?token=' . $token . '">Reset Password</a>
                 </div>
             </body>
         </html>
@@ -236,7 +236,7 @@ function resend_link($DB_con, $email)
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
     $mail->Username = 'lucaterspot@gmail.com';
-    $mail->Password = 'swab lgbd bufz sagd';
+    $mail->Password = 'qaat pzqc chtx ffvx';
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
 
@@ -302,7 +302,7 @@ function resend_link($DB_con, $email)
                     <p>Please click the following link to reset your password:</p>
                     <br>
                     <br>
-                    <a href="https://caterspot.online/client/reset-password-page.php?token=' . $token . '">Reset Password</a>
+                    <a href="http://localhost/caterspot/client/reset-password-page.php?token=' . $token . '">Reset Password</a>
                 </div>
             </body>
         </html>

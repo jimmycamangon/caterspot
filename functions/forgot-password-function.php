@@ -191,7 +191,7 @@ function forgot_password($DB_con, $email)
                     <p>Please click the following link to reset your password:</p>
                     <br>
                     <br>
-                    <a href="https://caterspot.online/reset-password-page.php?token=' . $token . '">Reset Password</a>
+                    <a href="http://localhost/caterspot/reset-password-page.php?token=' . $token . '">Reset Password</a>
                 </div>
             </body>
         </html>
@@ -302,7 +302,7 @@ function resend_link($DB_con, $email)
                     <p>Please click the following link to reset your password:</p>
                     <br>
                     <br>
-                    <a href="https://caterspot.online/reset-password-page.php?token=' . $token . '">Reset Password</a>
+                    <a href="http://localhost/caterspot/reset-password-page.php?token=' . $token . '">Reset Password</a>
                 </div>
             </body>
         </html>

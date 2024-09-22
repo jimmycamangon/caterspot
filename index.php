@@ -179,7 +179,8 @@ $additionalCatering = array_slice($cateringServices, $initialCount);
 
             <!-- See more services button -->
             <?php if (!empty($additionalCatering)): ?>
-                <center><button id="see-more-btn" class="btn-get-started" style="border: none;">See more services</button></center>
+                <center><button id="see-more-btn" class="btn-get-started" style="border: none;">See more services</button>
+                </center>
             <?php endif; ?>
 
 
@@ -522,6 +523,31 @@ $additionalCatering = array_slice($cateringServices, $initialCount);
             </div>
         </div>
 
+        <!-- Pop up Notification -->
+        <div class="modal fade" id="notifyModal" tabindex="-1" role="dialog" aria-labelledby="updateProfileModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="updateProfileModalLabel">
+                            Complete Your Profile
+                        </h5>
+                        <i class="fa-solid fa-xmark" style="font-size:20px; cursor:pointer;" data-dismiss="modal"
+                            aria-label="Close"></i>
+                    </div>
+                    <div class="modal-body">
+                        <p>You need to complete your profile by providing your contact number and address before you can
+                            proceed with booking.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="profile.php" style="color:white;text-decoration:none;"> <button type="button"
+                                class="btn-get-main"> Update Now
+                            </button></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <div class="container d-md-flex py-2">
             <div class="container py-2">
@@ -565,6 +591,62 @@ $additionalCatering = array_slice($cateringServices, $initialCount);
     <script src="assets/js/showpassword.js"></script>
     <script src="assets/js/verification-code.js"></script>
     <script src="assets/js/fetch-philadd.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <?php
+                // Fetch current user's profile information and notification status
+                $user_id = $_SESSION['user_id']; // user_id is available in the session
+                $stmt = $DB_con->prepare("SELECT contact, location, region, province, city, isNotified FROM tbl_users WHERE user_id = :user_id");
+                $stmt->bindParam(':user_id', $user_id);
+                $stmt->execute();
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                // Check if the user has not been notified and contact or location is missing
+                if (
+                    $result && ($result['isNotified'] == 0) && (empty($result['contact']) || empty($result['location'])
+                        || empty($result['region']) || empty($result['province']) || empty($result['city']))
+                ): ?>
+                    // Show the modal automatically if the user hasn't been notified and profile is incomplete
+                    var notifyModal = new bootstrap.Modal(document.getElementById('notifyModal'));
+                    notifyModal.show();
+
+                    // Update the isNotified status using AJAX after showing the modal
+                    fetch('functions/update-notification-status.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ user_id: <?php echo $user_id; ?> })
+                    }).then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log('Notification status updated successfully.');
+                            } else {
+                                console.log('Failed to update notification status.');
+                            }
+                        }).catch(error => console.error('Error:', error));
+                <?php endif; ?>
+            <?php endif; ?>
+        });
+
+
+
+        document.getElementById('see-more-btn').addEventListener('click', function () {
+            // Show the additional catering items
+            var additionalItems = document.querySelectorAll('.additional-catering');
+            additionalItems.forEach(function (item) {
+                item.style.display = 'flex'; // Change to flex to maintain layout
+            });
+
+            // Hide the button after it's clicked
+            this.style.display = 'none';
+        });
+
+    </script>
+
+
 
 
 

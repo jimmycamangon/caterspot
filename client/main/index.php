@@ -221,28 +221,29 @@ $status_counts = array_merge([
 
     <!-- Pop up Notification -->
     <div class="modal fade" id="notifyModal" tabindex="-1" role="dialog"
-    aria-labelledby="confirmationCompleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmationCompleteModalLabel">
-                    Important Notice
-                </h5>
-                <i class="fa-solid fa-xmark" style="font-size:20px; cursor:pointer;" data-dismiss="modal"
-                    aria-label="Close"></i>
-            </div>
-            <div class="modal-body">
-                <p>For security purposes, please update your temporary password in your profile settings at your earliest convenience.</p>
-            </div>
+        aria-labelledby="confirmationCompleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmationCompleteModalLabel">
+                        Important Notice
+                    </h5>
+                    <i class="fa-solid fa-xmark" style="font-size:20px; cursor:pointer;" data-dismiss="modal"
+                        aria-label="Close"></i>
+                </div>
+                <div class="modal-body">
+                    <p>For security purposes, please update your temporary password in your cater settings at your
+                        earliest convenience.</p>
+                </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn-get-main" data-dismiss="modal">
-                    <a href="profile.php" style="color:white;text-decoration:none;">Update Now</a>
-                </button>
+                <div class="modal-footer">
+                    <button type="button" class="btn-get-main" data-dismiss="modal">
+                        <a href="setting.php" style="color:white;text-decoration:none;">Update Now</a>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
 

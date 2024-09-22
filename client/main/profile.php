@@ -82,7 +82,7 @@ redirectToLogin();
                                                     } ?>
 
                                                     <img src="<?php echo $image_source; ?>"
-                                                        alt="" style="height: 140px;"></span>
+                                                        alt="" style="height: 140px; width:100px;"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -141,49 +141,6 @@ redirectToLogin();
                                             </div>
                                         </div>
                                         <br>
-                                        <hr>
-                                        <div class="row">
-                                            <div class="col-12 col-sm-6 mb-3">
-                                                <div class="mb-2 modal-header"><b>Change Password</b></div>
-                                                <div class="row">
-                                                    <div class="col">
-                                                        <div class="form-group">
-                                                            <label>New Password</label>
-                                                            <input class="form-control" type="password" name="newpass"
-                                                                id="newpass" id="newpass">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col">
-                                                        <div class="form-group">
-                                                            <label>Confirm <span
-                                                                    class="d-none d-xl-inline">Password</span></label>
-                                                            <input class="form-control" type="password" id="confirmpass"
-                                                                name="confirmpass" id="confirmpass">
-                                                        </div>
-                                                    </div>
-                                                            <small id="passwordLengthMessage"
-                                                                style="color: red;display:none;">&#9679; Password must
-                                                                be at least 8
-                                                                characters long.</small><br>
-                                                            <small id="passwordUppercaseMessage"
-                                                                style="color: red;display:none;">&#9679; Password must
-                                                                contain at
-                                                                least one
-                                                                uppercase letter.</small><br>
-                                                            <small id="passwordSpecialCharMessage"
-                                                                style="color: red;display:none;">
-                                                                &#9679; Password must contain at
-                                                                least one
-                                                                special character.</small><br>
-                                                            <small id="confirmPasswordMessage"
-                                                                style="color: red;display:none;">&#9679; Passwords do
-                                                                not
-                                                                match.</small>
-                                                </div>
-                                            </div>
-                                        </div>
                                         <div class="row">
                                             <div class="col d-flex justify-content-end">
                                                 <button class="btn-get-main" type="submit" id="saveChangesBtn">Save

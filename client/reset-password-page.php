@@ -4,7 +4,6 @@ require_once 'redirect.php';
 
 redirectToClientPage();
 
-
 $error = '';
 
 if (isset($_POST['reset_password'])) {
@@ -20,22 +19,56 @@ if (isset($_POST['reset_password'])) {
     } else if (strlen(trim($_POST['password'])) < 8) {
         $error = "<div class='alert alert-danger' role='alert'>Password must be at least 8 characters long</div>";
     } else if ($password != $confirm_password) {
-        $error = "<div class='alert alert-danger' role='alert'>Password do not match.</div>";
+        $error = "<div class='alert alert-danger' role='alert'>Passwords do not match.</div>";
     } else {
-        // Reset password if it meets all criteria
-        if (reset_password($DB_con, $token, $password)) {
-            // Password reset successfully, redirect with success message
-            $_SESSION['PASSWORD_RESET'] = true;
-            header("Location: index.php?reset=success");
-            exit();
+        // Prevent reuse of the old password
+        if (check_old_password($DB_con, $token, $password)) {
+            $error = "<div class='alert alert-danger' role='alert'>New password cannot be the same as the old password.</div>";
         } else {
-            $error = "<div class='alert alert-danger' role='alert'>Failed to Reset Password</div>";
+            // Reset password if it meets all criteria
+            if (reset_password($DB_con, $token, $password)) {
+                // Password reset successfully, redirect with success message
+                $_SESSION['PASSWORD_RESET'] = true;
+                header("Location: index.php?reset=success");
+                exit();
+            } else {
+                $error = "<div class='alert alert-danger' role='alert'>Failed to Reset Password</div>";
+            }
+        }
+    }
+}
+
+// Function to check if the new password matches the old password
+function check_old_password($DB_con, $token, $password)
+{
+    // Get the user's email using the token
+    $stmt = $DB_con->prepare("SELECT email FROM tblforgot_password_reset_tokens WHERE token = :token AND expiration >= :now");
+    $stmt->bindValue(':token', $token);
+    $stmt->bindValue(':now', time());
+    $stmt->execute();
+    $row = $stmt->fetch();
+
+    if ($row) {
+        $email = $row['email'];
+
+        // Get the old password hash from the users table
+        $stmt = $DB_con->prepare("SELECT password FROM tbl_clients WHERE email = :email");
+        $stmt->bindValue(':email', $email);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user) {
+            // Compare the new password with the old password hash
+            if (password_verify($password, $user['password'])) {
+                return true; // Password matches the old one
+            }
         }
     }
 
+    return false; // Password doesn't match the old one
 }
 
-// Function to check if a password meets the strength criteria
+// Function to reset password
 function reset_password($DB_con, $token, $password)
 {
     // Check if token is valid
@@ -46,7 +79,6 @@ function reset_password($DB_con, $token, $password)
     $row = $stmt->fetch();
 
     if ($row) {
-        // Token is valid
         $email = $row['email'];
         $hashed_password = password_hash($password, PASSWORD_ARGON2I);
 
@@ -57,27 +89,25 @@ function reset_password($DB_con, $token, $password)
         $user = $stmt->fetch();
 
         if ($user) {
-            // Update teacher's password
+            // Update the user's password
             $stmt = $DB_con->prepare("UPDATE tbl_clients SET password = :password WHERE email = :email");
+            $stmt->bindValue(':password', $hashed_password);
+            $stmt->bindValue(':email', $email);
+            $stmt->execute();
+
+            // Delete used token from the database
+            $stmt = $DB_con->prepare("DELETE FROM tblforgot_password_reset_tokens WHERE token = :token");
+            $stmt->bindValue(':token', $token);
+            $stmt->execute();
+
+            return true;
         }
-
-        // Bind values and execute the update query
-        $stmt->bindValue(':password', $hashed_password);
-        $stmt->bindValue(':email', $email);
-        $stmt->execute();
-
-        // Delete used token from the database
-        $stmt = $DB_con->prepare("DELETE FROM tblforgot_password_reset_tokens WHERE token = :token");
-        $stmt->bindValue(':token', $token);
-        $stmt->execute();
-
-        return true;
-    } else {
-        // Token is invalid
-        return false;
     }
+
+    return false;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -168,14 +198,32 @@ function reset_password($DB_con, $token, $password)
                                         </div>
                                         <div class="form-group">
                                             <label for="password" class="py-2">New Password:</label>
-                                            <input type="hidden" name="token" value="<?php echo $_GET['token']; ?>">
-                                            <input type="password" class="form-control" id="password" placeholder="&nbsp;"
-                                                name="password">
+                                            <div class="input-group">
+                                                <input type="hidden" name="token" value="<?php echo $_GET['token']; ?>">
+                                                <input type="password" class="form-control" id="password"
+                                                    placeholder="&nbsp;" name="password">
+                                                &nbsp;&nbsp;
+                                                <div class="input-group-append d-none py-2" style="cursor:pointer;"
+                                                    id="eyeIconContainerSignup">
+                                                    <span class="input-group-text" id="togglePasswordVisibilitySignup">
+                                                        <i class='bx bx-show'></i>
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="form-group">
                                             <label for="confirm_password" class="py-2">Confirm Password:</label>
-                                            <input type="password" class="form-control" id="confirm_password"
-                                                placeholder="&nbsp;" name="confirm_password">
+                                            <div class="input-group">
+                                                <input type="password" class="form-control" id="confirm_password"
+                                                    placeholder="&nbsp;" name="confirm_password">
+                                                &nbsp;&nbsp;
+                                                <div class="input-group-append d-none py-2" style="cursor:pointer;"
+                                                    id="eyeIconContainerSignupConfirm">
+                                                    <span class="input-group-text" id="togglePasswordVisibilitySignup">
+                                                        <i class='bx bx-show'></i>
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                         <br>
                                         <button type="submit" name="reset_password" class="btn-get-login">Reset
@@ -243,6 +291,7 @@ function reset_password($DB_con, $token, $password)
         <!-- Template Main JS File -->
         <script src="../assets/js/main.js"></script>
         <script src="login.js"></script>
+        <script src="../assets/js/client-forgot-password.js"></script>
 
 
 </body>

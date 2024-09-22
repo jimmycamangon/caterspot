@@ -2608,13 +2608,13 @@ section {
 
 /* Verification */
 
- #verificationForm {
+#verificationForm {
   padding: 2rem;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background: #fff;
 }
- #verificationForm .form-control {
+#verificationForm .form-control {
   display: block;
   height: 50px;
   margin-right: 0.5rem;
@@ -2622,7 +2622,18 @@ section {
   font-size: 1.25rem;
   min-width: 0;
 }
- #verificationForm .form-control:last-child {
+#verificationForm .form-control:last-child {
   margin-right: 0;
 }
 
+.img-static {
+  max-height: 400px; 
+  width: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  .img-static {
+    max-height: 250px; 
+  }
+}
