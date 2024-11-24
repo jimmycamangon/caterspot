@@ -44,6 +44,7 @@ $status_counts = array_merge([
     'rejected_count' => 0,
 ], $status_counts);
 
+
 ?>
 
 <!DOCTYPE html>
@@ -78,7 +79,7 @@ $status_counts = array_merge([
                     <ol class="breadcrumb mb-4">
                         <li class="breadcrumb-item active">Dashboard</li>
                     </ol>
-                    <form method="GET" action="index.php" class="mb-4">
+                    <form id="filter-form" method="GET" action="index.php" class="mb-4">
                         <div class="row">
                             <div class="col-md-2">
                                 <label for="start_date">Start Date:</label>
@@ -95,6 +96,7 @@ $status_counts = array_merge([
                             </div>
                         </div>
                     </form>
+
 
                     <div class="row">
                         <div class="col-xl-3 col-md-6">
@@ -170,6 +172,38 @@ $status_counts = array_merge([
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="fas fa-chart-area me-1"></i>
+                                    Top Best Seller Products
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" id="package-cards">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="row">
+                        <div class="col-xl-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="fas fa-chart-area me-1"></i>
+                                    Revenue per Day
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="fas fa-chart-bar me-1"></i>
+                                    Revenue per Month
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
                     <div class="card mb-4">
                         <div class="card-header">
                             <i class="fas fa-table me-1"></i>
@@ -291,6 +325,90 @@ $status_counts = array_merge([
                     }).catch(error => console.error('Error:', error));
             <?php endif; ?>
         });
+        // Function to fetch packages from the backend with date filters
+        function fetchTopPackages() {
+            // Get the start date and end date, defaulting to today's date if not provided
+            const startDate = encodeURIComponent(document.querySelector('input[name="start_date"]').value || new Date().toISOString().split('T')[0]); // Default to today if empty
+            const endDate = encodeURIComponent(document.querySelector('input[name="end_date"]').value || new Date().toISOString().split('T')[0]);   // Default to today if empty
+
+            return fetch(`functions/fetch-package-rate.php?start_date=${startDate}&end_date=${endDate}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                });
+        }
+
+        // Function to populate the package cards
+        function populatePackageCards(packages) {
+            const container = document.getElementById('package-cards');
+            container.innerHTML = ''; // Clear any existing content
+
+            if (packages.length === 0) {
+                // Display a placeholder message if no packages are available
+                container.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-info text-center" role="alert" style="font-size: 1.2rem;">
+                    No ratings available for packages yet.
+                </div>
+            </div>
+        `;
+                return;
+            }
+
+            // Display packages if available
+            packages.forEach(package => {
+                const averageRate = package.average_rate ? parseFloat(package.average_rate) : 0; // Ensure it's a number
+                const card = document.createElement('div');
+                card.classList.add('col');
+
+                card.innerHTML = `
+            <div class="card h-100">
+                <img src="../../assets/img/package-uploads/${package.package_image}" class="card-img-top" alt="${package.package_name}" style="height: 200px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">${package.package_name}</h5>
+                    <p class="card-text">Average Rating: ${averageRate.toFixed(1)} <i class="fa-solid fa-star" style="color: gold;"></i></p>
+                </div>
+            </div>
+        `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Fetch and display the packages when the page loads
+        window.addEventListener('DOMContentLoaded', (event) => {
+            // Trigger the package fetch with default date range on page load
+            fetchTopPackages()
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+                    populatePackageCards(data); // Update the cards with the data
+                })
+                .catch(error => console.error('Error fetching packages:', error));
+        });
+
+        // Add event listener to the filter form
+        document.getElementById('filter-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent the form from reloading the page
+
+            // Fetch the filtered data and update the package cards
+            fetchTopPackages()
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+                    populatePackageCards(data); // Update the cards with filtered results
+                })
+                .catch(error => console.error('Error fetching packages:', error));
+        });
+
+
+    </script>
     </script>
 
 </body>
