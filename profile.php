@@ -229,8 +229,19 @@ if (!isset($_SESSION['user_id'])) {
                                                             <div class="col">
                                                                 <div class="form-group">
                                                                     <label>New Password</label>
-                                                                    <input class="form-control" type="password"
-                                                                        name="newpass" id="newpass">
+                                                                    <div class="input-group">
+                                                                        <input class="form-control" type="password"
+                                                                            name="newpass" id="newpass">
+                                                                        &nbsp;&nbsp;
+                                                                        <div class="input-group-append d-none py-2"
+                                                                            style="cursor:pointer;"
+                                                                            id="eyeIconContainerSignup">
+                                                                            <span class="input-group-text"
+                                                                                id="togglePasswordVisibilitySignup">
+                                                                                <i class='bx bx-show'></i>
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -239,8 +250,19 @@ if (!isset($_SESSION['user_id'])) {
                                                                 <div class="form-group">
                                                                     <label>Confirm <span
                                                                             class="d-none d-xl-inline">Password</span></label>
-                                                                    <input class="form-control" type="password"
-                                                                        name="confirmpass" id="confirmpass">
+                                                                    <div class="input-group">
+                                                                        <input class="form-control" type="password"
+                                                                            name="confirmpass" id="confirmpass">
+                                                                        &nbsp;&nbsp;
+                                                                        <div class="input-group-append d-none py-2"
+                                                                            style="cursor:pointer;"
+                                                                            id="eyeIconContainerSignupConfirm">
+                                                                            <span class="input-group-text"
+                                                                                id="togglePasswordVisibilitySignup">
+                                                                                <i class='bx bx-show'></i>
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
 
@@ -366,6 +388,7 @@ if (!isset($_SESSION['user_id'])) {
     <!-- Template Main JS File -->
     <script src="assets/js/main.js"></script>
     <script src="assets/js/validate-profile.js"></script>
+    <script src="assets/js/showpassword_profile.js"></script>
 
     <script>
         $(document).ready(function () {

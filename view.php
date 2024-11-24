@@ -102,7 +102,7 @@ require_once 'functions/fetch-gallery.php';
                         $image_source = 'assets/img/client-images/Image_not_available.jpg';
                     }
                     ?>
-                    <img src="<?php echo $image_source; ?>" alt="Profile" class="img-fluid img-thumbnail"
+                    <img src="<?php echo $image_source; ?>" alt="No Profile" class="img-fluid img-thumbnail"
                         style="max-width: 190px; position: absolute; top: 0; left: 0;">
                 </div>
                 <div class="col-md-8 col-12">
@@ -230,6 +230,23 @@ require_once 'functions/fetch-gallery.php';
                                                         menu</span>
                                                 </a>
                                             <?php } ?>
+                                            <br>
+                                            <br>
+                                            <?php if (!isset($_SESSION['user_id'])) { ?>
+                                                <span
+                                                    style="font-size:18px;border:1px solid white;padding:0.5em;color:white;cursor:pointer;"
+                                                    data-toggle="modal" data-target="#RedirectModal">
+                                                    Rate Package
+                                                </span>
+                                            <?php } else { ?>
+                                                <span
+                                                    style="font-size:18px;border:1px solid white;padding:0.5em;color:white;cursor:pointer;"
+                                                    data-toggle="modal" data-target="#ratingModal"
+                                                    data-package-id="<?php echo $package['package_id']; ?>">
+                                                    Rate Package
+                                                </span>
+                                            <?php } ?>
+
                                         </div>
                                     </div>
                                 </div>
@@ -736,6 +753,79 @@ require_once 'functions/fetch-gallery.php';
             </div>
         </div>
 
+        <!-- Rating Modal -->
+        <div class="modal fade" id="ratingModal" tabindex="-1" role="dialog" aria-labelledby="ratingModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="ratingModalLabel">We’d Love Your Feedback!</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div id="rating-message"></div>
+                        </div>
+                        <div class="form-group">
+                            <p>Your opinion matters to us! Please take a moment to rate your experience with our
+                                packages.</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="rating">
+                                <h5><b>Product Rating:</b></h5>
+                            </label>
+                            <br>
+                            <small>How would you rate the quality of our product?</small>
+                            <br>
+                            <div class="rating-container">
+                                <div class="container__items">
+                                    <input type="radio" name="ratingStars" id="rSt5" value="5">
+                                    <label for="rSt5">
+                                        <div class="star-stroke">
+                                            <div class="star-fill"></div>
+                                        </div>
+                                        <div class="label-description" data-content="Excellent"></div>
+                                    </label>
+                                    <input type="radio" name="ratingStars" id="rSt4" value="4">
+                                    <label for="rSt4">
+                                        <div class="star-stroke">
+                                            <div class="star-fill"></div>
+                                        </div>
+                                        <div class="label-description" data-content="Good"></div>
+                                    </label>
+                                    <input type="radio" name="ratingStars" id="rSt3" value="3">
+                                    <label for="rSt3">
+                                        <div class="star-stroke">
+                                            <div class="star-fill"></div>
+                                        </div>
+                                        <div class="label-description" data-content="OK"></div>
+                                    </label>
+                                    <input type="radio" name="ratingStars" id="rSt2" value="2">
+                                    <label for="rSt2">
+                                        <div class="star-stroke">
+                                            <div class="star-fill"></div>
+                                        </div>
+                                        <div class="label-description" data-content="Bad"></div>
+                                    </label>
+                                    <input type="radio" name="ratingStars" id="rSt1" value="1">
+                                    <label for="rSt1">
+                                        <div class="star-stroke">
+                                            <div class="star-fill"></div>
+                                        </div>
+                                        <div class="label-description" data-content="Terrible"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-get-del" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn-get-main" id="submitRating">Submit Rating</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
 
 
     </main><!-- End #main -->
@@ -786,7 +876,7 @@ require_once 'functions/fetch-gallery.php';
 
     <script src="assets/js/fetch-feedbacks.js"></script>
     <script src="assets/js/submit-feedbacks.js"></script>
-
+    <script src="assets/js/submit-rating.js"></script>
 
 </body>
 

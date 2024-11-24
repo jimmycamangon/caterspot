@@ -2,31 +2,10 @@
 require_once 'config/conn.php';
 require_once 'functions/fetch-user.php';
 
-if (isset($_GET['query'])) {
-    $query = "%" . $_GET['query'] . "%"; // Prepare the search term with wildcards
-
-    // Fetch data from the database
-    $stmt = $DB_con->prepare("SELECT A.cater_name, A.cater_description, A.client_id, 
-    COALESCE(SUM(B.rate), 0) AS total_rating
-    FROM tblclient_settings AS A
-    LEFT JOIN tbl_feedbacks AS B ON A.client_id = B.client_id
-    WHERE A.cater_name LIKE ?
-    GROUP BY A.cater_name, A.cater_description, A.client_id");
-
-    $stmt->execute([$query]);
-    $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    echo json_encode($cateringServices); // Return results as JSON
-} else {
-    // Fetch data from the database
-    $stmt = $DB_con->prepare("SELECT A.cater_name, A.cater_description, A.client_id, SUM(B.rate) AS total_rating
-FROM tblclient_settings AS A
-LEFT JOIN tbl_feedbacks AS B ON A.client_id = B.client_id
-GROUP BY A.cater_name, A.cater_description, A.client_id
-ORDER BY total_rating DESC");
-    $stmt->execute();
-    $cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+// Fetch data from the database
+$stmt = $DB_con->prepare("SELECT cater_name, cater_description, client_id FROM tblclient_settings");
+$stmt->execute();
+$cateringServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Number of items to display initially
 $initialCount = 3;
@@ -55,10 +34,6 @@ $additionalCatering = array_slice($cateringServices, $initialCount);
     <link
         href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
         rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
-        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-
 
     <!-- Vendor CSS Files -->
     <link href="assets/vendor/aos/aos.css" rel="stylesheet">
@@ -167,17 +142,45 @@ $additionalCatering = array_slice($cateringServices, $initialCount);
                 </div>
             <?php } ?>
 
-            <input type="text" id="search-cater" placeholder="Search for a catering service..."
-                class="form-control mt-3 mb-4" style="max-width: 400px; margin: auto;">
-            <div class="row icon-boxes flex justify-content-evenly ">
+
+            <div class="row icon-boxes flex justify-content-evenly">
+                <!-- Display initial catering items -->
+                <?php foreach ($initialCatering as $catering): ?>
+                    <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-4 mb-lg-0" data-aos="zoom-in"
+                        data-aos-delay="200">
+                        <div class="icon-box">
+                            <h4 class="title"><a href=""><?php echo htmlspecialchars($catering['cater_name']); ?></a></h4>
+                            <p class="description py-2">
+                                <?php echo !empty($catering['cater_description']) ? $catering['cater_description'] : "No Description Provided"; ?>
+                            </p>
+                            <a href="view.php?cater=<?php echo urlencode($catering['cater_name']); ?>&id=<?php echo urlencode($catering['client_id']); ?>"
+                                class="btn-learn-more">View Services</a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+
+                <!-- Hidden additional catering items -->
+                <?php if (!empty($additionalCatering)): ?>
+                    <?php foreach ($additionalCatering as $catering): ?>
+                        <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-4 mb-lg-0 additional-catering"
+                            data-aos="zoom-in" data-aos-delay="200" style="display: none !important;">
+                            <div class="icon-box">
+                                <h4 class="title"><a href=""><?php echo htmlspecialchars($catering['cater_name']); ?></a></h4>
+                                <p class="description py-2">
+                                    <?php echo !empty($catering['cater_description']) ? $catering['cater_description'] : "No Description Provided"; ?>
+                                </p>
+                                <a href="view.php?cater=<?php echo urlencode($catering['cater_name']); ?>&id=<?php echo urlencode($catering['client_id']); ?>"
+                                    class="btn-learn-more">View Services</a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
 
             <!-- See more services button -->
             <?php if (!empty($additionalCatering)): ?>
-                <center><button id="see-more-btn" class="btn-get-started" style="border: none;">See more services</button>
-                </center>
+                <center><button id="see-more-btn" class="btn-get-started" style="border: none;">See more services</button></center>
             <?php endif; ?>
-
 
         </div>
     </section>
@@ -422,6 +425,93 @@ $additionalCatering = array_slice($cateringServices, $initialCount);
             </div>
         </section>
 
+        <!-- Vendor Modal -->
+        <div class="modal fade" id="vendorModal" tabindex="-1" role="dialog" aria-labelledby="vendorModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content" id="firstDisplay">
+                    <div class="modal-header d-flex justify-content-between">
+                        <h5 class="modal-title" id="vendorModalLabel">Application Form</h5>
+                        <i class='bx bx-x close' style="font-size:30px; cursor:pointer;" data-dismiss="modal"
+                            aria-label="Close"></i>
+                    </div>
+
+                    <div class="modal-body">
+                        <form id="vendorForm" enctype="multipart/form-data">
+                            <div id="vendor_message"></div>
+
+                            <!-- Vendor form -->
+                            <div class="form-group">
+                                <label for="business_name">Business Name:</label>
+                                <input type="text" class="form-control" id="business_name" name="business_name">
+                            </div>
+                            <div class="form-group">
+                                <label for="owner">Owner:</label>
+                                <input type="text" class="form-control" id="owner" name="owner">
+                            </div>
+                            <div class="form-group">
+                                <label for="contact_number">Contact Number:</label>
+                                <input type="number" class="form-control" id="contact_number" name="contact_number">
+                            </div>
+                            <div class="form-group">
+                                <label for="gmail">Gmail Account:</label>
+                                <input type="email" class="form-control" id="gmail" name="gmail">
+                            </div>
+                            <label for="location">Location:</label>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Region</label>
+                                        <select class="form-control" id="edit_region" name="edit_region">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Province</label>
+                                        <select class="form-control" id="edit_province" name="edit_province">
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>City/Municipality</label>
+                                        <select class="form-control" id="edit_city" name="edit_city">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Street</label>
+                                        <input type="text" class="form-control" id="street" name="street">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="permit">Business Permit:</label>
+                                <input type="file" class="form-control" id="permit" name="permit[]" multiple
+                                    accept=".pdf, .doc, .docx, .jpg, .jpeg, .png">
+                            </div>
+                            <div class="form-group">
+                                <label for="menu">Menu:</label>
+                                <input type="file" class="form-control" id="menu" name="menu[]" multiple
+                                    accept=".pdf, .doc, .docx, .jpg, .jpeg, .png">
+                            </div>
+                            <div class="form-group">
+                                <label for="business_img">Image:</label>
+                                <input type="file" class="form-control" id="business_img" name="business_img[]" multiple
+                                    accept=".jpg, .jpeg, .png">
+                            </div>
+                            <button type="submit" class="btn-get-main my-4" style="width:100% !important;"
+                                id="verificationButton">Submit Form</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- End Vendor Section -->
         <!-- ======= Contact Section ======= -->
         <section id="contact" class="contact">
@@ -517,8 +607,8 @@ $additionalCatering = array_slice($cateringServices, $initialCount);
                 </div>
             </div>
         </div>
-
-        <!-- Pop up Notification -->
+        
+                <!-- Pop up Notification -->
         <div class="modal fade" id="notifyModal" tabindex="-1" role="dialog" aria-labelledby="updateProfileModalLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
@@ -585,9 +675,10 @@ $additionalCatering = array_slice($cateringServices, $initialCount);
     <script src="assets/js/login.js"></script>
     <script src="assets/js/showpassword.js"></script>
     <script src="assets/js/verification-code.js"></script>
+    <!-- <script src="assets/js/vendor-message.js"></script> -->
     <script src="assets/js/fetch-philadd.js"></script>
-
-    <script>
+    
+        <script>
         document.addEventListener("DOMContentLoaded", function () {
             <?php if (isset($_SESSION['user_id'])): ?>
                 <?php
@@ -628,117 +719,18 @@ $additionalCatering = array_slice($cateringServices, $initialCount);
 
 
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const searchInput = document.getElementById('search-cater');
-            const cardsContainer = document.querySelector('.icon-boxes');
-            const seeMoreButton = document.getElementById('see-more-btn');
-            const initialCount = 3; // Define the number of initial cards to display
-            let allCateringData = []; // To hold all catering data
-
-            // Fetch all catering services on initial load
-            fetch('search-cater.php')
-                .then(response => response.json())
-                .then(data => {
-                    allCateringData = data; // Store all catering data
-                    displayInitialCatering(); // Show initial catering items
-                });
-
-            searchInput.addEventListener('input', function () {
-                const query = searchInput.value;
-
-                if (query.length > 0) {
-                    // AJAX request to fetch catering services based on search
-                    fetch(`search-cater.php?query=${encodeURIComponent(query)}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            cardsContainer.innerHTML = ''; // Clear current cards
-
-                            if (data.length === 0) {
-                                cardsContainer.innerHTML = '<center><p>No catering services found.</p></center>';
-                                seeMoreButton.style.display = 'none'; // Hide button if no results
-                                return;
-                            }
-
-                            // Show only the initial count of catering services
-                            const initialCatering = data.slice(0, initialCount);
-                            initialCatering.forEach(catering => {
-                                const card = createCard(catering);
-                                cardsContainer.appendChild(card);
-                            });
-
-                            // Show the "See More" button if there are additional items
-                            seeMoreButton.style.display = data.length > initialCount ? 'block' : 'none';
-                        });
-                } else {
-                    // If the input is cleared, display the initial count of catering services
-                    displayInitialCatering();
-                }
+        document.getElementById('see-more-btn').addEventListener('click', function () {
+            // Show the additional catering items
+            var additionalItems = document.querySelectorAll('.additional-catering');
+            additionalItems.forEach(function (item) {
+                item.style.display = 'flex'; // Change to flex to maintain layout
             });
 
-            seeMoreButton.addEventListener('click', function () {
-                // Show all additional catering items
-                const additionalItems = allCateringData.slice(initialCount); // Get all additional items
-                additionalItems.forEach(catering => {
-                    const card = createCard(catering);
-                    cardsContainer.appendChild(card);
-                });
-
-                // Hide the button after it's clicked
-                this.style.display = 'none';
-            });
-
-            function displayInitialCatering() {
-                cardsContainer.innerHTML = ''; // Clear current cards
-                const initialCatering = allCateringData.slice(0, initialCount); // Get the initial count of catering services
-                initialCatering.forEach(catering => {
-                    const card = createCard(catering);
-                    cardsContainer.appendChild(card);
-                });
-
-                // Show the "See More" button if there are additional items
-                seeMoreButton.style.display = allCateringData.length > initialCount ? 'block' : 'none';
-            }
-
-            function createCard(catering) {
-                const card = document.createElement('div');
-                card.className = 'col-md-6 col-lg-3 d-flex align-items-stretch mb-4 mb-lg-0';
-                card.setAttribute('data-aos', 'zoom-in');
-                card.setAttribute('data-aos-delay', '200');
-
-                // Round the average rating to one decimal place
-                const roundedRating = catering.average_rating > 0
-                    ? parseFloat(catering.average_rating).toFixed(1)
-                    : "No Ratings"; // Round to one decimal place
-
-                const ratingDisplay = catering.average_rating > 0
-                    ? `<span class="rating"><i class="fa-solid fa-star" style="color: gold;"></i> ${parseFloat(catering.average_rating).toFixed(1)}</span>`
-                    : `<span class="no-rating" style='font-size:0.8rem;'><i class="fa-solid fa-star" style="color: gray;"></i> No Ratings Yet</span>`;
-
-
-                // Highlight top-rated cards (if desired threshold is reached)
-                const isTopRated = roundedRating !== "No Ratings" && parseFloat(roundedRating) >= 4; // Define threshold for "top-rated" display
-                const topRatedClass = isTopRated ? 'top-rated' : ''; // Add class for styling top-rated services
-
-                card.innerHTML = `
-        <div class="icon-box ${topRatedClass}">
-            <p class="description py-2">${ratingDisplay}</p>
-            <h4 class="title"><a href="#">${catering.cater_name}</a></h4>
-            <p class="description py-2">${catering.cater_description || "No Description Provided"}</p>
-            <a href="view.php?cater=${encodeURIComponent(catering.cater_name)}&id=${encodeURIComponent(catering.client_id)}" class="btn-learn-more">View Services</a>
-        </div>
-    `;
-
-                return card;
-            }
-
-
-
+            // Hide the button after it's clicked
+            this.style.display = 'none';
         });
 
-
     </script>
-
-
 
 
 

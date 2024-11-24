@@ -98,16 +98,23 @@ redirectToLogin();
                                                         <span class="badge bg-success"><?php echo $client['status']; ?></span>
                                                 <?php } ?>
                                             </td>
-                                            <td> <a href="view-applications.php?client_id=<?php echo $client['client_id']; ?>"
-                                                    style="text-decoration:none;" class="btn-get-main view-btn">
-                                                    <i class="fa-solid fa-eye"></i> View</a>
-
+                                            <td>
                                                 <?php if ($client['status'] == "Pending") { ?>
+                                                    <a href="view-applications.php?client_id=<?php echo $client['client_id']; ?>"
+                                                        style="text-decoration:none;" class="btn-get-main view-btn">
+                                                        <i class="fa-solid fa-eye"></i> View</a>
                                                     <button class="btn-get-del" data-toggle="modal" data-target="#RejectModal"
                                                         data-client-id="<?php echo $client['client_id'] ?>">
                                                         <i class="fa-solid fa-ban"></i> Reject
                                                     </button>
-
+                                                <?php } else { ?>
+                                                    <a href="view-applications.php?client_id=<?php echo $client['client_id']; ?>"
+                                                        style="text-decoration:none;" class="btn-get-main view-btn">
+                                                        <i class="fa-solid fa-eye"></i> View</a>
+                                                    <button class="btn-get-del" data-toggle="modal" data-target="#DeleteModal"
+                                                        data-user-id="<?php echo $client['client_id'] ?>"><i
+                                                            class="fa-solid fa-trash"></i>
+                                                        Delete</button>
                                                 <?php } ?>
                                             </td>
                                         </tr>
@@ -149,7 +156,26 @@ redirectToLogin();
         </div>
     </div>
 
-
+    <div class="modal fade" id="DeleteModal" tabindex="-1" role="dialog" aria-labelledby="DeleteModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="DeleteModalLabel">Delete Confirmation</h5>
+                    <i class="fa-solid fa-xmark" style="font-size:20px; cursor:pointer;" data-dismiss="modal"
+                        aria-label="Close"></i>
+                </div>
+                <div class="modal-body">
+                    <div id="message"></div>
+                    Are you sure you want to delete this Application?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-get-main" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-get-del" id="confirmDeleteBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 
@@ -180,7 +206,7 @@ redirectToLogin();
                 var remarks = $('#remarks').val(); // Get remarks from the textarea
 
                 rejectApplication(clientId, remarks); // Call rejectApplication function
-                
+
             });
         });
     </script>
@@ -188,6 +214,7 @@ redirectToLogin();
     <script src="../vendor/js/datatables-simple-demo.js"></script>
 
     <script src="functions/js/reject-client.js"></script>
+    <script src="functions/js/delete-application.js"></script>
 </body>
 
 </html>

@@ -44,6 +44,10 @@
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-chart-simple"></i></div>
                             Monthly Revenue
                         </a>
+                        <a class="nav-link" href="top-cater-permonth.php">
+                            <div class="sb-nav-link-icon"><i class="fa-solid fa-star"></i></div>
+                            Top Caterings
+                        </a>
                     </nav>
                 </div>
                 <a class="nav-link" href="applications.php">

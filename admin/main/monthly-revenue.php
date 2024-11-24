@@ -1,5 +1,6 @@
 <?php
 include_once 'functions/fetch-monthly-revenue.php';
+include_once 'functions/fetch-monthly-revenue-outstanding.php';
 require_once 'functions/sessions.php';
 
 redirectToLogin();
@@ -87,6 +88,10 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
                                         <div class="col-md-4 align-self-end">
                                             <button class="btn-get-main" type="submit"><i
                                                     class="fa-solid fa-filter"></i> &nbsp;Filter</button>
+                                            &nbsp; | &nbsp;
+                                            <span class="btn-get-del" data-toggle="modal" data-target="#ListofUnpaid"
+                                                style="cursor:pointer;"><i class="fa-solid fa-list"></i>
+                                                &nbsp;View Outstanding Fees</span>
                                         </div>
                                     </div>
                                 </div>
@@ -97,9 +102,13 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
                                 <thead>
                                     <tr>
                                         <th>Transaction No.</th>
-                                        <th>Client</th>
+                                        <th>Cater</th>
                                         <th>Revenue</th>
-                                        <th>Collected at</th>
+                                        <th>Platform Fee</th>
+                                        <th>Status</th>
+                                        <th>Collection Date</th>
+                                        <th>Action</th>
+
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -112,10 +121,29 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
                                                 <?php echo $tax['username']; ?>
                                             </td>
                                             <td>
+                                                <?php echo $tax['client_revenue']; ?>
+                                            </td>
+                                            <td>
                                                 <?php echo $tax['tax']; ?>
                                             </td>
                                             <td>
+                                                <center>
+                                                    <?php
+                                                    if ($tax['status'] == "Not Paid" || $tax['status'] == ""): ?>
+                                                        <span class="badge bg-danger">Not Paid</span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-success">Paid</span>
+                                                    <?php endif; ?>
+                                                </center>
+                                            </td>
+                                            <td>
                                                 <?php echo $tax['month']; ?>
+                                            </td>
+                                            <td>
+                                                <button class="btn-get-main edit-btn" data-toggle="modal"
+                                                    data-target="#editStatus" data-status-id="<?php echo $tax['id'] ?>"><i
+                                                        class="fa-solid fa-pen-to-square"></i>
+                                                    Edit Status</button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -130,22 +158,99 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
     </div>
 
 
-    <div class="modal fade" id="DeleteModal" tabindex="-1" role="dialog" aria-labelledby="DeleteModalLabel"
+    <div class="modal fade" id="editStatus" tabindex="-1" role="dialog" aria-labelledby="editStatusLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="DeleteModalLabel">Delete Confirmation</h5>
+                    <h5 class="modal-title" id="editStatusLabel">Edit Status</h5>
                     <i class="fa-solid fa-xmark" style="font-size:20px; cursor:pointer;" data-dismiss="modal"
                         aria-label="Close"></i>
                 </div>
                 <div class="modal-body">
-                    <div id="message"></div>
-                    Are you sure you want to delete this Customer?
+                    <div id="editMessage"></div>
+
+                    <!-- Edit form -->
+                    <div id="editPackageForm">
+                        <!-- Dropdown for availability -->
+                        <div class="form-group">
+                            <label for="edit_status">Status:</label>
+                            <select class="form-control" id="edit_status" name="edit_status">
+
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-get-main" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn-get-del" id="confirmDeleteBtn">Delete</button>
+                    <button type="button" class="btn-get-del" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn-get-main" id="saveChangesBtn">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="ListofUnpaid" tabindex="-1" role="dialog" aria-labelledby="ListofUnpaidLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ListofUnpaidLabel">Outstanding Catering Platform Fees</h5>
+                    <i class="fa-solid fa-xmark" style="font-size:20px; cursor:pointer;" data-dismiss="modal"
+                        aria-label="Close"></i>
+                </div>
+                <div class="modal-body">
+                    <!-- Table form -->
+                    <div id="listofunpaid">
+                        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                            <?php if (!empty($outstandings)): ?>
+                                <table class="table" style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background-color: #f8f9fa; color: #333;">
+                                            <th style="padding: 10px; border: 1px solid #ddd;">Transaction No.</th>
+                                            <th style="padding: 10px; border: 1px solid #ddd;">Cater</th>
+                                            <th style="padding: 10px; border: 1px solid #ddd;">Platform Fee</th>
+                                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
+                                            <th style="padding: 10px; border: 1px solid #ddd;">Collection Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($outstandings as $outstanding): ?>
+                                            <tr>
+                                                <td style="padding: 10px; border: 1px solid #ddd;">
+                                                    <?php echo htmlspecialchars($outstanding['transactionNo']); ?>
+                                                </td>
+                                                <td style="padding: 10px; border: 1px solid #ddd;">
+                                                    <?php echo htmlspecialchars($outstanding['username']); ?>
+                                                </td>
+                                                <td style="padding: 10px; border: 1px solid #ddd;">
+                                                    <?php echo htmlspecialchars($outstanding['tax']); ?>
+                                                </td>
+                                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
+                                                    <center>
+                                                        <?php
+                                                        if ($outstanding['status'] == "Not Paid" || $outstanding['status'] == ""): ?>
+                                                            <span class="badge bg-danger">Not Paid</span>
+                                                        <?php endif; ?>
+                                                    </center>
+                                                </td>
+                                                <td style="padding: 10px; border: 1px solid #ddd;">
+                                                    <?php echo htmlspecialchars($outstanding['month']); ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            <?php else: ?>
+                                <p style="text-align: center; padding: 20px; color: #6c757d;">No outstanding platform fees.
+                                </p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-get-del" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -191,6 +296,7 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
 
 
     <script src="../vendor/js/datatables-simple-demo.js"></script>
+    <script src="functions/js/edit-status.js"></script>
 
 </body>
 

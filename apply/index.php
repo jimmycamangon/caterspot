@@ -203,7 +203,7 @@
                                 </div>
                                 <div class="col">
                                     <div class="form-group">
-                                        <label>Street <span class="required_info">*</span></label>
+                                        <label>Barangay <span class="required_info">*</span></label>
                                         <input type="text" class="form-control" id="street" name="street">
                                     </div>
                                 </div>
