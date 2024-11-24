@@ -11,7 +11,7 @@ try {
     $sql = "SELECT t1.day AS day, SUM(t2.tax) AS total_tax 
             FROM tblref_day t1 
             LEFT JOIN tbladmin_taxcollected_stats t2 ON t1.day = DAY(t2.collectedAt) 
-            WHERE t2.collectedAt BETWEEN :start_date AND :end_date
+            WHERE t2.collectedAt BETWEEN :start_date AND :end_date AND t2.status = 'Paid'
             GROUP BY t1.day";
 
     // Execute the query

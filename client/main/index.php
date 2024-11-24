@@ -186,12 +186,12 @@ $status_counts = array_merge([
                             </div>
                         </div>
                     </div>
-                    <!-- <div class="row">
+                    <div class="row">
                         <div class="col-xl-6">
                             <div class="card mb-4">
                                 <div class="card-header">
                                     <i class="fas fa-chart-area me-1"></i>
-                                    Revenue per Day
+                                    Actual Sales
                                 </div>
                             </div>
                         </div>
@@ -199,11 +199,11 @@ $status_counts = array_merge([
                             <div class="card mb-4">
                                 <div class="card-header">
                                     <i class="fas fa-chart-bar me-1"></i>
-                                    Revenue per Month
+                                    Performance Rating
                                 </div>
                             </div>
                         </div>
-                    </div> -->
+                    </div>
                     <div class="card mb-4">
                         <div class="card-header">
                             <i class="fas fa-table me-1"></i>

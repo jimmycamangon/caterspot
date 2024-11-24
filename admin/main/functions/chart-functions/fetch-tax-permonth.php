@@ -11,7 +11,7 @@ try {
     $sql = "SELECT t1.month AS month, SUM(t2.tax) AS total_tax 
             FROM tblref_month t1 
             LEFT JOIN tbladmin_taxcollected_stats t2 ON t1.month_id = MONTH(t2.collectedAt) 
-            WHERE t2.collectedAt BETWEEN :start_date AND :end_date
+            WHERE t2.collectedAt BETWEEN :start_date AND :end_date AND t2.status = 'Paid'
             GROUP BY t1.month
             ORDER BY t1.month_id";
 
