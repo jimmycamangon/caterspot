@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </header><!-- End Header -->
 
     <!-- ======= Hero Section ======= -->
-    <section id="hero" class="d-flex align-items-center position-relative"
+    <section id="forgot-pass" class="d-flex align-items-center position-relative"
         style="background-image: url('assets/img/hero-bg4.jpg'); background-position: top center; background-size: cover;">
         <div class="overlay"></div>
         <div class="container" data-aos="fade-up" data-aos-delay="100">

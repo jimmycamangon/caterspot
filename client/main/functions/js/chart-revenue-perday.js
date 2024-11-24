@@ -1,5 +1,3 @@
-
-
 // Function to fetch data from PHP script
 function fetchDataFromPHP() {
     const url = `functions/chart-functions/fetch-revenue-perday.php?start_date=${encodeURIComponent(document.querySelector('input[name="start_date"]').value)}&end_date=${encodeURIComponent(document.querySelector('input[name="end_date"]').value)}`;
@@ -12,13 +10,18 @@ function fetchDataFromPHP() {
         });
 }
 
-  
-  // Function to populate the chart
-  function populateChart(data) {
+// Function to populate the chart
+function populateChart(data) {
     // Extract data for labels and datasets
     const labels = data.map(entry => 'Day ' + entry.day);
-    const taxData = data.map(entry => entry.total_revenue);
-  
+    const revenueData = data.map(entry => entry.total_revenue);
+
+    // Calculate the max value from the revenueData
+    const maxRevenue = Math.max(...revenueData);
+
+    // Determine the adjusted max value (round it up to the next highest value)
+    const adjustedMax = Math.ceil(maxRevenue * 1.1);  // Increase by 20% for extra space above the highest value
+
     // Prepare the data for the chart
     const chartData = {
         labels: labels,
@@ -34,10 +37,10 @@ function fetchDataFromPHP() {
             pointHoverBackgroundColor: 'rgba(2,117,216,1)',
             pointHitRadius: 50,
             pointBorderWidth: 2,
-            data: taxData,
+            data: revenueData,
         }],
     };
-  
+
     // Populate the chart
     const ctx = document.getElementById('myAreaChart').getContext('2d');
     const myLineChart = new Chart(ctx, {
@@ -59,7 +62,7 @@ function fetchDataFromPHP() {
                 yAxes: [{
                     ticks: {
                         min: 0,
-                        max: 80000,
+                        max: adjustedMax, // Dynamically adjust max value based on the data
                         maxTicksLimit: 5
                     },
                     gridLines: {
@@ -72,10 +75,9 @@ function fetchDataFromPHP() {
             }
         }
     });
-  }
-  
-  // Fetch data from PHP script and populate the chart
-  fetchDataFromPHP()
+}
+
+// Fetch data from PHP script and populate the chart
+fetchDataFromPHP()
     .then(data => populateChart(data))
     .catch(error => console.error('Error fetching data:', error));
-  

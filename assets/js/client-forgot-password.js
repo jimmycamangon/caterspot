@@ -69,3 +69,104 @@ if (confirmpass) {
     });
   }
 }
+
+// INDICATION FOR PASSWORD
+document.addEventListener("DOMContentLoaded", function () {
+  const passwordField = document.getElementById("password");
+  const confirmPasswordField = document.getElementById("confirm_password");
+  const passwordLengthMessage = document.getElementById(
+    "passwordLengthMessage"
+  );
+  const passwordUppercaseMessage = document.getElementById(
+    "passwordUppercaseMessage"
+  );
+  const passwordSpecialCharMessage = document.getElementById(
+    "passwordSpecialCharMessage"
+  );
+  const confirmPasswordMessage = document.getElementById(
+    "confirmPasswordMessage"
+  );
+  var submitBtn = document.getElementById("reset_password");
+
+  // Validate password on input
+  passwordField.addEventListener("input", function () {
+    const password = passwordField.value;
+    let allConditionsMet = true; // Flag to track if all conditions are met
+
+
+    const passwords = passwordField.value.trim(); // Trim to remove leading and trailing whitespace
+
+    if (passwords === "") {
+      // Password input is empty, hide all messages
+      passwordLengthMessage.style.display = "none";
+      passwordUppercaseMessage.style.display = "none";
+      passwordSpecialCharMessage.style.display = "none";
+      passwordField.classList.remove("invalid");
+    } else {
+      // Password input is not empty, show all messages
+      passwordLengthMessage.style.display = "block";
+      passwordUppercaseMessage.style.display = "block";
+      passwordSpecialCharMessage.style.display = "block";
+    }
+
+    // Check if password meets length requirement
+    if (password.length >= 8) {
+      passwordLengthMessage.style.color = "green";
+      passwordField.classList.remove("invalid");
+    } else {
+      passwordLengthMessage.style.color = "red";
+      passwordField.classList.add("invalid");
+      allConditionsMet = false; // Set flag to false if length condition is not met
+    }
+
+    // Check if password contains at least one uppercase letter
+    if (/[A-Z]/.test(password)) {
+      passwordUppercaseMessage.style.color = "green";
+      passwordField.classList.remove("invalid");
+    } else {
+      passwordUppercaseMessage.style.color = "red";
+      passwordField.classList.add("invalid");
+      allConditionsMet = false; // Set flag to false if uppercase condition is not met
+    }
+
+    // Check if password contains at least one special character
+    if (/[!@#$%^&*]/.test(password)) {
+      passwordSpecialCharMessage.style.color = "green";
+      passwordField.classList.remove("invalid");
+    } else {
+      passwordSpecialCharMessage.style.color = "red";
+      passwordField.classList.add("invalid");
+      allConditionsMet = false; // Set flag to false if special character condition is not met
+    }
+
+    // Enable or disable the submit button based on all conditions being met
+    submitBtn.disabled = !allConditionsMet;
+  });
+
+  // Validate confirm password on input
+  confirmPasswordField.addEventListener("input", function () {
+    const password = passwordField.value;
+    const confirmPassword = confirmPasswordField.value;
+
+    const confirmPasswords = confirmPasswordField.value.trim();
+
+    if (confirmPasswords === "") {
+      confirmPasswordMessage.style.display = "none";
+      confirmPasswordField.classList.remove("invalid");
+    } else {
+      confirmPasswordMessage.style.display = "block";
+    }
+    if (password !== confirmPassword) {
+      confirmPasswordMessage.style.color = "red";
+      confirmPasswordMessage.style.display = "block";
+      confirmPasswordField.classList.add("invalid");
+
+      submitBtn.disabled = true; // Disable the submit button if passwords do not match
+    } else {
+      confirmPasswordMessage.style.color = "green";
+      confirmPasswordMessage.style.display = "none";
+      confirmPasswordField.classList.remove("invalid");
+      submitBtn.disabled = false;
+    }
+  });
+});

@@ -475,6 +475,86 @@ h6 {
   border-radius: 8px;
   z-index: 1;
 }
+/* FORGOT PASSWORD */
+
+#forgot-pass {
+  width: 100%;
+  position: relative;
+}
+
+#forgot-pass .overlay {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 1; /* Ensure the overlay is behind the content */
+}
+
+#forgot-pass .container {
+  position: relative;
+  z-index: 2; /* Ensure the content is above the overlay */
+  padding-top: 60px;
+}
+
+#forgot-pass h1 {
+  margin: 0;
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 72px;
+  color: #124265;
+  font-family: "Poppins", sans-serif;
+}
+
+#forgot-pass h2 {
+  color: #5e5e5e;
+  margin: 10px 0 0 0;
+  font-size: 22px;
+}
+
+#forgot-pass .btn-get-started {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  padding: 14px 50px;
+  border-radius: 5px;
+  transition: 0.5s;
+  margin-top: 30px;
+  color: #fff;
+  background: #2487ce;
+}
+
+#forgot-pass .btn-get-started:hover {
+  background: #3194db;
+}
+
+#forgot-pass .icon-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 100px;
+}
+@media (max-width: 768px) {
+  #forgot-pass .icon-boxes .icon-box {
+    text-align: center;
+  }
+}
+
+
+#forgot-pass .icon-box {
+  padding: 50px 30px;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 0 29px 0 rgba(18, 66, 101, 0.08);
+  transition: all 0.3s ease-in-out;
+  border-radius: 8px;
+  z-index: 1;
+}
+
 
 #login .icon-box {
   padding: 50px 30px;

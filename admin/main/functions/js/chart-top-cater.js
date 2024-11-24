@@ -30,6 +30,12 @@ function populateRatingsChart(data) {
     const labels = data.map(entry => entry.username);
     const ratingsData = data.map(entry => parseFloat(entry.average_rating));
 
+    // Calculate the maximum rating value
+    const maxRating = Math.max(...ratingsData);
+
+    // Adjust the max value (round up to next whole number for a cleaner scale)
+    const adjustedMax = Math.ceil(maxRating);
+
     // Generate random colors for the chart
     const backgroundColors = generateRandomColors(data.length);
     const borderColors = backgroundColors.map(color => color.replace('0.2', '1')); // Higher opacity for borders
@@ -70,6 +76,7 @@ function populateRatingsChart(data) {
                 },
                 y: {
                     beginAtZero: true,
+                    max: adjustedMax,  // Dynamically adjust max value based on the data
                     title: {
                         display: true,
                         text: 'Average Rating',

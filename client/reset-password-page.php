@@ -224,9 +224,22 @@ function reset_password($DB_con, $token, $password)
                                                     </span>
                                                 </div>
                                             </div>
+                                            <small id="passwordLengthMessage"
+                                                style="color: red;display:none;padding-top:10px;">&#9679;
+                                                Password must be
+                                                at least 8 characters long.</small>
+                                            <small id="passwordUppercaseMessage" style="color: red;display:none;">&#9679;
+                                                Password must
+                                                contain at least one uppercase letter.</small>
+                                            <small id="passwordSpecialCharMessage" style="color: red;display:none;"> &#9679;
+                                                Password
+                                                must contain at least one special character.</small>
+                                            <small id="confirmPasswordMessage" style="color: red;display:none;">&#9679;
+                                                Passwords do not
+                                                match.</small>
                                         </div>
                                         <br>
-                                        <button type="submit" name="reset_password" class="btn-get-login">Reset
+                                        <button type="submit" id="reset_password" name="reset_password" class="btn-get-login">Reset
                                             Password</button><br><br><br>
                                     </form>
 

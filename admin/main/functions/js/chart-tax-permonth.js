@@ -1,4 +1,3 @@
-
 // Set new default font family and font color to mimic Bootstrap's default styling
 Chart.defaults.global.defaultFontFamily = '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
 Chart.defaults.global.defaultFontColor = '#292b2c';
@@ -13,14 +12,20 @@ function fetchDataForBarChart() {
             }
             return response.json();
         });
-  }
-  
-  // Function to populate the bar chart
-  function populateBarChart(data) {
+}
+
+// Function to populate the bar chart
+function populateBarChart(data) {
     // Extract data for labels and datasets
-    const labels = data.map(entry =>  entry.month);
+    const labels = data.map(entry => entry.month);
     const taxData = data.map(entry => entry.total_tax);
-  
+
+    // Calculate the max value from the taxData
+    const maxTax = Math.max(...taxData);
+
+    // Determine the adjusted max value (round it up to the next highest value)
+    const adjustedMax = Math.ceil(maxTax * 1.1);  // Increase by 20% for extra space above the highest value
+
     // Prepare the data for the bar chart
     const chartData = {
         labels: labels,
@@ -28,10 +33,10 @@ function fetchDataForBarChart() {
             label: "Tax collected",
             backgroundColor: "rgba(2,117,216,1)",
             borderColor: "rgba(2,117,216,1)",
-            data: taxData, // Use fetched revenue data here
+            data: taxData, // Use fetched tax data here
         }],
     };
-  
+
     // Populate the bar chart
     const ctx = document.getElementById('myBarChart').getContext('2d');
     const myBarChart = new Chart(ctx, {
@@ -53,7 +58,7 @@ function fetchDataForBarChart() {
                 yAxes: [{
                     ticks: {
                         min: 0,
-                        max: 200000,
+                        max: adjustedMax, // Dynamically adjust max value based on the data
                         maxTicksLimit: 5
                     },
                     gridLines: {
@@ -66,10 +71,9 @@ function fetchDataForBarChart() {
             }
         }
     });
-  }
-  
-  // Fetch data from PHP script and populate the bar chart
-  fetchDataForBarChart()
+}
+
+// Fetch data from PHP script and populate the bar chart
+fetchDataForBarChart()
     .then(data => populateBarChart(data))
     .catch(error => console.error('Error fetching data for bar chart:', error));
-  
