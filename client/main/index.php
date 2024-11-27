@@ -44,7 +44,41 @@ $status_counts = array_merge([
     'rejected_count' => 0,
 ], $status_counts);
 
+// Get the current and previous months
+$currentMonth = date('Y-m');
+$lastMonth = date('Y-m', strtotime('-1 month'));
 
+// Get the current month's name (e.g., November)
+$currentMonthName = date('F');
+
+try {
+    // Query to calculate total revenue for the current month
+    $stmt = $DB_con->prepare("
+        SELECT SUM(revenue) AS total_revenue 
+        FROM tblclient_revenue_stats 
+        WHERE DATE_FORMAT(collectedAt, '%Y-%m') = :currentMonth
+    ");
+    $stmt->execute([':currentMonth' => $currentMonth]);
+    $currentRevenue = $stmt->fetch(PDO::FETCH_ASSOC)['total_revenue'] ?? 0;
+
+    // Query to calculate total revenue for the previous month
+    $stmt = $DB_con->prepare("
+        SELECT SUM(revenue) AS total_revenue 
+        FROM tblclient_revenue_stats 
+        WHERE DATE_FORMAT(collectedAt, '%Y-%m') = :lastMonth
+    ");
+    $stmt->execute([':lastMonth' => $lastMonth]);
+    $lastRevenue = $stmt->fetch(PDO::FETCH_ASSOC)['total_revenue'] ?? 0;
+
+    // Calculate the percentage change
+    if ($lastRevenue > 0) {
+        $percentageChange = (($currentRevenue - $lastRevenue) / $lastRevenue) * 100;
+    } else {
+        $percentageChange = $currentRevenue > 0 ? 100 : 0; // Assume 100% increase if no revenue last month
+    }
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}
 ?>
 
 <!DOCTYPE html>
@@ -99,6 +133,7 @@ $status_counts = array_merge([
 
 
                     <div class="row">
+                        <!-- KPI Cards: Pending -->
                         <div class="col-xl-3 col-md-6">
                             <div class="card bg-warning text-white mb-4">
                                 <div class="card-body">
@@ -112,6 +147,8 @@ $status_counts = array_merge([
                                 </div>
                             </div>
                         </div>
+
+                        <!-- KPI Cards: Booked -->
                         <div class="col-xl-3 col-md-6">
                             <div class="card bg-primary text-white mb-4">
                                 <div class="card-body">
@@ -125,6 +162,8 @@ $status_counts = array_merge([
                                 </div>
                             </div>
                         </div>
+
+                        <!-- KPI Cards: Completed -->
                         <div class="col-xl-3 col-md-6">
                             <div class="card bg-success text-white mb-4">
                                 <div class="card-body">
@@ -138,12 +177,14 @@ $status_counts = array_merge([
                                 </div>
                             </div>
                         </div>
+
+                        <!-- KPI Cards: Rejected -->
                         <div class="col-xl-3 col-md-6">
                             <div class="card bg-danger text-white mb-4">
                                 <div class="card-body">
                                     <h4>
                                         <?php echo $status_counts['rejected_count']; ?>
-                                    </h4> Rejected / Request for cancellation
+                                    </h4>Rejected / Request for cancellation
                                 </div>
                                 <div class="card-footer d-flex align-items-center justify-content-between">
                                     <a class="small text-white stretched-link" href="reject_cancel.php">View Details</a>
@@ -152,6 +193,38 @@ $status_counts = array_merge([
                             </div>
                         </div>
                     </div>
+
+                    <!-- Actual Sales KPI Card -->
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card text-white mb-4" style="background: #3a3939;color: white; margin-bottom: 1.5rem;">
+                                <div class="card-body">
+                                    <h4>₱<?php echo number_format($currentRevenue, 2); ?></h4>
+                                    Actual Sales as of Month <?php echo $currentMonthName; ?>
+                                    <p>
+                                        <?php if ($percentageChange > 0): ?>
+                                            <span class="text-success">
+                                                <i class="fas fa-arrow-up"></i>
+                                                +<?php echo number_format($percentageChange, 2); ?>%
+                                            </span>
+                                        <?php elseif ($percentageChange < 0): ?>
+                                            <span class="text-danger">
+                                                <i class="fas fa-arrow-down"></i>
+                                                <?php echo number_format($percentageChange, 2); ?>%
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-muted">No Change</span>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <a class="small text-white stretched-link" href="sales-details.php">View Details</a>
+                                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-xl-6">
                             <div class="card mb-4">
