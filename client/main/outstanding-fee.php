@@ -1,6 +1,5 @@
 <?php
-include_once 'functions/fetch-monthly-revenue.php';
-include_once 'functions/fetch-monthly-revenue-outstanding.php';
+include_once 'functions/fetch-outstanding.php';
 require_once 'functions/sessions.php';
 
 redirectToLogin();
@@ -72,7 +71,7 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
                                 </button>
                             </div>
                             &nbsp;
-                            <form action="monthly-revenue.php" method="GET" class="form-inline">
+                            <form action="outstanding-revenue.php" method="GET" class="form-inline">
                                 <div class="form-group">
                                     <div class="row">
                                         <div class="col-md-2">
@@ -98,27 +97,38 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
                             <table id="datatablesSimple" class="table">
                                 <thead>
                                     <tr>
-                                        <th>Cater</th>
-                                        <th>Revenue</th>
+                                        <th>Transaction No.</th>
+                                        <th>Customer</th>
                                         <th>Platform Fee</th>
+                                        <th>Status</th>
                                         <th>Collection Date</th>
 
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($taxs as $tax): ?>
+                                    <?php foreach ($outstandings as $outstanding): ?>
                                         <tr>
                                             <td>
-                                                <?php echo $tax['username']; ?>
+                                                <?php echo $outstanding['transactionNo']; ?>
                                             </td>
                                             <td>
-                                                <?php echo $tax['client_revenue']; ?>
+                                                <?php echo $outstanding['username']; ?>
                                             </td>
                                             <td>
-                                                <?php echo $tax['total_tax']; ?>
+                                                <?php echo $outstanding['tax']; ?>
                                             </td>
                                             <td>
-                                                <?php echo $tax['month']; ?>
+                                                <center>
+                                                    <?php
+                                                    if ($outstanding['status'] == "Not Paid" || $outstanding['status'] == ""): ?>
+                                                        <span class="badge bg-danger">Not Paid</span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-success">Paid</span>
+                                                    <?php endif; ?>
+                                                </center>
+                                            </td>
+                                            <td>
+                                                <?php echo $outstanding['month']; ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -129,6 +139,38 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
                 </div>
             </main>
             <?php require_once 'includes/footer.php'; ?>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="editStatus" tabindex="-1" role="dialog" aria-labelledby="editStatusLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editStatusLabel">Edit Status</h5>
+                    <i class="fa-solid fa-xmark" style="font-size:20px; cursor:pointer;" data-dismiss="modal"
+                        aria-label="Close"></i>
+                </div>
+                <div class="modal-body">
+                    <div id="editMessage"></div>
+
+                    <!-- Edit form -->
+                    <div id="editPackageForm">
+                        <!-- Dropdown for availability -->
+                        <div class="form-group">
+                            <label for="edit_status">Status:</label>
+                            <select class="form-control" id="edit_status" name="edit_status">
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-get-del" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn-get-main" id="saveChangesBtn">Save changes</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -158,14 +200,13 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
 
             // Convert sheet to Excel file
             var workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, sheet, 'Revenue Report');
+            XLSX.utils.book_append_sheet(workbook, sheet, 'Outstanding Revenue Report');
 
             // Save the Excel file
             var today = new Date().toISOString().slice(0, 10); // Get today's date
-            var filename = 'revenue_report_' + today + '.xlsx';
+            var filename = 'outstanding_revenue_report_' + today + '.xlsx';
             XLSX.writeFile(workbook, filename);
         });
-
 
 
     </script>

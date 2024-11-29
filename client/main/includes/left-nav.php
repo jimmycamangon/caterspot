@@ -275,6 +275,10 @@
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-chart-simple"></i></div>
                             Monthly Revenue
                         </a>
+                        <a class="nav-link" href="outstanding-fee.php">
+                            <div class="sb-nav-link-icon"><i class="fa-solid fa-outdent"></i></div>
+                            Outstanding Fee
+                        </a>
                         <a class="nav-link" href="top-package.php">
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-star"></i></div>
                             Top Packages

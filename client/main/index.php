@@ -5,20 +5,22 @@ require_once 'functions/sessions.php';
 include_once 'functions/fetch-feedbacks.php';
 
 redirectToLogin();
+$client_id = $_SESSION['client_id'];
 
 // Get date range from the request or set defaults
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01'); // First day of the current month
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');   // Last day of the current month
 
-// Prepare the base query
-$query = "SELECT COUNT(CASE WHEN A.status = 'Pending' THEN 1 END) AS pending_count, 
-          COUNT(CASE WHEN A.status = 'Booked' THEN 1 END) AS approved_count, 
-          COUNT(CASE WHEN A.status = 'Completed' THEN 1 END) AS completed_count, 
-          COUNT(CASE WHEN A.status = 'Rejected' OR A.status = 'Request for cancel' THEN 1 END) AS rejected_count 
-          FROM tbl_orders AS A 
-          LEFT JOIN tblclient_settings AS B ON A.cater = B.cater_name 
-          LEFT JOIN tbl_userinformationorder AS C ON A.transactionNo = C.transactionNo
-          WHERE A.cater = :username";
+// Prepare the base query to count statuses, including the client_id condition
+$query = "
+    SELECT COUNT(CASE WHEN A.status = 'Pending' THEN 1 END) AS pending_count, 
+           COUNT(CASE WHEN A.status = 'Booked' THEN 1 END) AS approved_count, 
+           COUNT(CASE WHEN A.status = 'Completed' THEN 1 END) AS completed_count, 
+           COUNT(CASE WHEN A.status = 'Rejected' OR A.status = 'Request for cancel' THEN 1 END) AS rejected_count 
+    FROM tbl_orders AS A 
+    LEFT JOIN tblclient_settings AS B ON A.cater = B.cater_name 
+    LEFT JOIN tbl_userinformationorder AS C ON A.transactionNo = C.transactionNo
+    WHERE A.cater = :username AND B.client_id = :client_id";
 
 // Add date range filtering if dates are provided
 if ($startDate && $endDate) {
@@ -27,6 +29,7 @@ if ($startDate && $endDate) {
 
 $stmt = $DB_con->prepare($query);
 $stmt->bindParam(':username', $client_cater_name, PDO::PARAM_STR);
+$stmt->bindParam(':client_id', $client_id, PDO::PARAM_INT); // Ensure you're binding the correct client_id here
 
 if ($startDate && $endDate) {
     $stmt->bindParam(':start_date', $startDate);
@@ -44,42 +47,66 @@ $status_counts = array_merge([
     'rejected_count' => 0,
 ], $status_counts);
 
-// Get the current and previous months
+// Prepare query to calculate total revenue for the current month with optional date filtering
 $currentMonth = date('Y-m');
+$currentMonthRevenueQuery = "
+    SELECT SUM(revenue) AS total_revenue 
+    FROM tblclient_revenue_stats 
+    LEFT JOIN tbl_clients AS D ON tblclient_revenue_stats.client_id = D.client_id
+    WHERE DATE_FORMAT(collectedAt, '%Y-%m') = :currentMonth AND tblclient_revenue_stats.client_id = :client_id";
+
+// Add date range condition if filters are provided
+if ($startDate && $endDate) {
+    $currentMonthRevenueQuery .= " AND collectedAt BETWEEN :start_date AND :end_date";
+}
+
+$stmt = $DB_con->prepare($currentMonthRevenueQuery);
+$stmt->bindParam(':currentMonth', $currentMonth, PDO::PARAM_STR);
+$stmt->bindParam(':client_id', $client_id, PDO::PARAM_INT); // Ensure you're binding the correct client_id here
+
+if ($startDate && $endDate) {
+    $stmt->bindParam(':start_date', $startDate);
+    $stmt->bindParam(':end_date', $endDate);
+}
+
+$stmt->execute();
+$currentRevenue = $stmt->fetch(PDO::FETCH_ASSOC)['total_revenue'] ?? 0;
+
+// Prepare the previous month's value with the same client_id filter
 $lastMonth = date('Y-m', strtotime('-1 month'));
 
-// Get the current month's name (e.g., November)
-$currentMonthName = date('F');
+$lastMonthRevenueQuery = "
+    SELECT SUM(revenue) AS total_revenue 
+    FROM tblclient_revenue_stats 
+    LEFT JOIN tbl_clients AS D ON tblclient_revenue_stats.client_id = D.client_id
+    WHERE DATE_FORMAT(collectedAt, '%Y-%m') = :lastMonth AND tblclient_revenue_stats.client_id = :client_id";
 
-try {
-    // Query to calculate total revenue for the current month
-    $stmt = $DB_con->prepare("
-        SELECT SUM(revenue) AS total_revenue 
-        FROM tblclient_revenue_stats 
-        WHERE DATE_FORMAT(collectedAt, '%Y-%m') = :currentMonth
-    ");
-    $stmt->execute([':currentMonth' => $currentMonth]);
-    $currentRevenue = $stmt->fetch(PDO::FETCH_ASSOC)['total_revenue'] ?? 0;
+$stmt = $DB_con->prepare($lastMonthRevenueQuery);
+$stmt->bindParam(':lastMonth', $lastMonth, PDO::PARAM_STR);
+$stmt->bindParam(':client_id', $client_id, PDO::PARAM_INT); // Ensure you're binding the correct client_id here
+$stmt->execute();
+$lastRevenue = $stmt->fetch(PDO::FETCH_ASSOC)['total_revenue'] ?? 0;
 
-    // Query to calculate total revenue for the previous month
-    $stmt = $DB_con->prepare("
-        SELECT SUM(revenue) AS total_revenue 
-        FROM tblclient_revenue_stats 
-        WHERE DATE_FORMAT(collectedAt, '%Y-%m') = :lastMonth
-    ");
-    $stmt->execute([':lastMonth' => $lastMonth]);
-    $lastRevenue = $stmt->fetch(PDO::FETCH_ASSOC)['total_revenue'] ?? 0;
+// Calculate the percentage change
+if ($lastRevenue > 0) {
+    $percentageChange = (($currentRevenue - $lastRevenue) / $lastRevenue) * 100;
+} else {
+    $percentageChange = $currentRevenue > 0 ? 100 : 0; // Assume 100% increase if no revenue last month
+}
 
-    // Calculate the percentage change
-    if ($lastRevenue > 0) {
-        $percentageChange = (($currentRevenue - $lastRevenue) / $lastRevenue) * 100;
-    } else {
-        $percentageChange = $currentRevenue > 0 ? 100 : 0; // Assume 100% increase if no revenue last month
-    }
-} catch (PDOException $e) {
-    echo "Error: " . $e->getMessage();
+// Determine the label for the month or date range
+if ($startDate && $endDate && $startDate !== date('Y-m-01') && $endDate !== date('Y-m-t')) {
+    // Convert start and end dates to readable format (e.g., July 01, 2024)
+    $startMonthName = date('F d, Y', strtotime($startDate));
+    $endMonthName = date('F d, Y', strtotime($endDate));
+    $filteredMonthLabel = "$startMonthName and $endMonthName";
+} else {
+    // Default to the current month
+    $filteredMonthLabel = "Month of " . date('F');
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -196,11 +223,12 @@ try {
 
                     <!-- Actual Sales KPI Card -->
                     <div class="row">
-                        <div class="col-6">
-                            <div class="card text-white mb-4" style="background: #3a3939;color: white; margin-bottom: 1.5rem;">
+                        <div class="col-12 col-md-6">
+                            <div class="card text-white mb-4"
+                                style="background: #3a3939; color: white; margin-bottom: 1.5rem;">
                                 <div class="card-body">
                                     <h4>₱<?php echo number_format($currentRevenue, 2); ?></h4>
-                                    Actual Sales as of Month <?php echo $currentMonthName; ?>
+                                    Actual Sales as of <?php echo $filteredMonthLabel; ?>
                                     <p>
                                         <?php if ($percentageChange > 0): ?>
                                             <span class="text-success">
@@ -223,7 +251,20 @@ try {
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="fa-solid fa-chart-line"></i>
+                                    Performance Rating
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="topCaterChart" style="width: 100%; height: auto;"></canvas>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
 
                     <div class="row">
                         <div class="col-xl-6">
@@ -249,30 +290,12 @@ try {
                         <div class="col">
                             <div class="card mb-4">
                                 <div class="card-header">
-                                    <i class="fas fa-chart-area me-1"></i>
+                                    <i class="fa-solid fa-star"></i>
                                     Top Best Seller Products
                                 </div>
                                 <div class="card-body">
                                     <div class="row" id="package-cards">
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-xl-6">
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <i class="fas fa-chart-area me-1"></i>
-                                    Actual Sales
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-6">
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <i class="fas fa-chart-bar me-1"></i>
-                                    Performance Rating
                                 </div>
                             </div>
                         </div>
@@ -360,6 +383,7 @@ try {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
     <script src="functions/js/chart-revenue-perday.js"></script>
     <script src="functions/js/chart-revenue-permonth.js"></script>
+    <script src="functions/js/chart-cater.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
         crossorigin="anonymous"></script>
 
@@ -466,7 +490,7 @@ try {
 
         // Add event listener to the filter form
         document.getElementById('filter-form').addEventListener('submit', function (event) {
-            event.preventDefault(); // Prevent the form from reloading the page
+
 
             // Fetch the filtered data and update the package cards
             fetchTopPackages()
@@ -479,6 +503,20 @@ try {
                 })
                 .catch(error => console.error('Error fetching packages:', error));
         });
+        // Fetch the actual sales data with filters
+        function fetchActualSales() {
+            const startDate = document.querySelector('input[name="start_date"]').value || '';
+            const endDate = document.querySelector('input[name="end_date"]').value || '';
+
+            fetch(`path-to-your-script.php?start_date=${startDate}&end_date=${endDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update the sales data on the page
+                    document.querySelector('#actual-sales-amount').textContent = `₱${data.currentRevenue}`;
+                    document.querySelector('#percentage-change').textContent = `${data.percentageChange}%`;
+                })
+                .catch(error => console.error('Error fetching sales data:', error));
+        }
 
 
     </script>

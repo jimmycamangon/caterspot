@@ -88,10 +88,6 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
                                         <div class="col-md-4 align-self-end">
                                             <button class="btn-get-main" type="submit"><i
                                                     class="fa-solid fa-filter"></i> &nbsp;Filter</button>
-                                            &nbsp; | &nbsp;
-                                            <span class="btn-get-del" data-toggle="modal" data-target="#ListofUnpaid"
-                                                style="cursor:pointer;"><i class="fa-solid fa-list"></i>
-                                                &nbsp;View Unpaid Fees</span>
                                         </div>
                                     </div>
                                 </div>
@@ -101,7 +97,6 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
                             <table id="datatablesSimple" class="table">
                                 <thead>
                                     <tr>
-                                        <th>Transaction No.</th>
                                         <th>Customer</th>
                                         <th>Revenue</th>
                                         <th>Platform Fee</th>
@@ -112,9 +107,6 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
                                 <tbody>
                                     <?php foreach ($revenues as $revenue): ?>
                                         <tr>
-                                            <td>
-                                                <?php echo $revenue['transactionNo']; ?>
-                                            </td>
                                             <td>
                                                 <?php echo $revenue['username']; ?>
                                             </td>

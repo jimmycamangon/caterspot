@@ -17,7 +17,7 @@ if (isset($_SESSION['client_id'])) {
             LEFT JOIN tblclient_revenue_stats t4 ON t2.transactionNo = t4.transactionNo AND t2.client_id = t4.client_id
             LEFT JOIN tbladmin_taxcollected_stats t5 ON t2.transactionNo = t5.transactionNo AND t2.client_id = t5.client_id
             WHERE YEAR(t2.collectedAt) = :year AND t2.client_id = :client_id
-            AND DATE(t2.collectedAt) BETWEEN :start_date AND :end_date AND t5.status = 'Paid'
+            AND DATE(t2.collectedAt) BETWEEN :start_date AND :end_date 
             GROUP BY t1.month";
 
     try {

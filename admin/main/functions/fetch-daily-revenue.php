@@ -13,7 +13,7 @@ if (isset($_SESSION['admin_id'])) {
             FROM tblref_day t1
             LEFT JOIN tbladmin_taxcollected_stats t2 ON t1.day = DAY(t2.collectedAt)
             LEFT JOIN tbl_clients t3 ON t2.client_id = t3.client_id
-            WHERE DATE(t2.collectedAt) BETWEEN :start_date AND :end_date
+            WHERE DATE(t2.collectedAt) BETWEEN :start_date AND :end_date AND t2.status = 'Paid'
             GROUP BY t1.day
             ORDER BY t2.collectedAt ASC";
 
