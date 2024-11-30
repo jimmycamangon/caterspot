@@ -11,6 +11,11 @@ $client_id = $_SESSION['client_id'];
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01'); // First day of the current month
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');   // Last day of the current month
 
+// Adjust endDate to 23:59:59 for the last day of the previous month
+if ($startDate && $endDate) {
+    $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
+}
+
 // Prepare the base query to count statuses, including the client_id condition
 $query = "
     SELECT COUNT(CASE WHEN A.status = 'Pending' THEN 1 END) AS pending_count, 
@@ -105,6 +110,7 @@ if ($startDate && $endDate && $startDate !== date('Y-m-01') && $endDate !== date
     $filteredMonthLabel = "Month of " . date('F');
 }
 ?>
+
 
 
 
@@ -503,20 +509,6 @@ if ($startDate && $endDate && $startDate !== date('Y-m-01') && $endDate !== date
                 })
                 .catch(error => console.error('Error fetching packages:', error));
         });
-        // Fetch the actual sales data with filters
-        function fetchActualSales() {
-            const startDate = document.querySelector('input[name="start_date"]').value || '';
-            const endDate = document.querySelector('input[name="end_date"]').value || '';
-
-            fetch(`path-to-your-script.php?start_date=${startDate}&end_date=${endDate}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Update the sales data on the page
-                    document.querySelector('#actual-sales-amount').textContent = `₱${data.currentRevenue}`;
-                    document.querySelector('#percentage-change').textContent = `${data.percentageChange}%`;
-                })
-                .catch(error => console.error('Error fetching sales data:', error));
-        }
 
 
     </script>

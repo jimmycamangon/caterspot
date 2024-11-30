@@ -4,6 +4,11 @@ require_once 'functions/sessions.php';
 
 redirectToLogin();
 
+require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 // Ensure the client_id is set in the session
 if (!isset($_SESSION['client_id'])) {
     echo json_encode(['error' => 'Client ID not found in session.']);
@@ -78,6 +83,112 @@ try {
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);
 }
+
+
+// Fetch cater name and image
+$caterName = '';
+$sql = "SELECT username, client_image FROM tbl_clients WHERE client_id = ?";
+$stmt = $DB_con->prepare($sql);
+$stmt->execute([$client_id]);
+$cater = $stmt->fetch();
+$caterName = $cater['username'];
+$clientImagePath = '../../assets/img/client-images/' . $cater['client_image'];
+
+// Check if there's data to export
+if (isset($_GET['export']) && $_GET['export'] == 'true') {
+    if (empty($topPackages)) {
+        echo "<script>alert('No data available to export.'); window.history.back();</script>";
+        exit();
+    }
+
+    // Create a new Spreadsheet object
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Add client logo if available
+    if (!empty($clientImagePath) && file_exists($clientImagePath)) {
+        // Add client logo
+        $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+        $drawing->setName('Logo');
+        $drawing->setDescription('Client Logo');
+        $drawing->setPath($clientImagePath);
+        $drawing->setHeight(80);
+        $drawing->setCoordinates('D1');
+        $drawing->setWorksheet($sheet);
+    } else {
+        $sheet->setCellValue('A1', 'No Image Available');
+    }
+
+    // Add cater name to the spreadsheet
+    $sheet->setCellValue('A3', 'Cater Name: ' . $caterName);
+    $sheet->setCellValue('A4', 'Exported Date: ' . date('Y-m-d'));
+
+    // Style cater name and date
+    $sheet->getStyle('A3:A4')->applyFromArray([
+        'font' => [
+            'bold' => true,
+            'size' => 14, // Increased font size
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ],
+    ]);
+
+    // Table headers for export
+    $sheet->setCellValue('A10', 'Package');
+    $sheet->setCellValue('B10', 'Rating');
+
+    // Style table headers
+    $headerStyle = [
+        'font' => [
+            'bold' => true,
+            'size' => 12,
+            'color' => ['rgb' => 'FFFFFF'],
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => '142d4c'],
+        ],
+    ];
+    $sheet->getStyle('A10:B10')->applyFromArray($headerStyle);
+
+    // Populate data rows for export
+    $row = 11;
+    foreach ($topPackages as $package) {
+        $sheet->setCellValue('A' . $row, $package['package_name']);
+        $sheet->setCellValue('B' . $row, $package['average_rate']);
+        $row++;
+    }
+
+    // Add borders to data rows
+    $lastRow = $row - 1;
+    $sheet->getStyle('A11:B' . $lastRow)->applyFromArray([
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+    ]);
+
+    // Set column widths
+    $sheet->getColumnDimension('A')->setAutoSize(true);
+    $sheet->getColumnDimension('B')->setAutoSize(true);
+
+    // Write file and download
+    $writer = new Xlsx($spreadsheet);
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="top_package_report_' . date('Y-m-d') . '.xlsx"');
+    header('Cache-Control: max-age=0');
+    $writer->save('php://output');
+    exit();
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -135,9 +246,9 @@ try {
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Revenue per day</b>
                                 &nbsp; | &nbsp;
-                                <button type="button" class="btn-get-main" id="exportButton">
+                                <a href="top-package.php?export=true" class="btn-get-main" style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
-                                </button>
+                                </a>
                             </div>
                             &nbsp;
                             <form action="top-package.php" method="GET">
@@ -166,8 +277,6 @@ try {
                             <table id="datatablesSimple" class="table">
                                 <thead>
                                     <tr>
-                                        <th>Customer.</th>
-                                        <th>Client</th>
                                         <th>Package</th>
                                         <th>Rating</th>
                                     </tr>
@@ -175,12 +284,6 @@ try {
                                 <tbody>
                                     <?php foreach ($topPackages as $package): ?>
                                         <tr>
-                                            <td>
-                                                <?php echo $package['firstname'] . $package['lastname']; ?>
-                                            </td>
-                                            <td>
-                                                <?php echo $package['username']; ?>
-                                            </td>
                                             <td>
                                                 <?php echo $package['package_name']; ?>
                                             </td>
@@ -238,25 +341,6 @@ try {
     <!-- Include jQuery library -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
-    <!-- Export to excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
-
-    <script>
-        document.getElementById('exportButton').addEventListener('click', function () {
-            // Get table data
-            var table = document.getElementById('datatablesSimple');
-            var sheet = XLSX.utils.table_to_sheet(table);
-
-            // Convert sheet to Excel file
-            var workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, sheet, 'Revenue Report');
-
-            // Save the Excel file
-            var today = new Date().toISOString().slice(0, 10); // Get today's date
-            var filename = 'top_package_' + today + '.xlsx';
-            XLSX.writeFile(workbook, filename);
-        });
-    </script>
 
 
     <script src="../vendor/js/datatables-simple-demo.js"></script>

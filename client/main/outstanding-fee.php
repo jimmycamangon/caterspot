@@ -1,6 +1,10 @@
 <?php
 include_once 'functions/fetch-outstanding.php';
 require_once 'functions/sessions.php';
+require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // PhpSpreadsheet library
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 redirectToLogin();
 
@@ -8,7 +12,124 @@ redirectToLogin();
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : '';
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
 
+// Fetch cater name and image
+$client_id = $_SESSION['client_id'];
+$caterName = '';
+$clientImagePath = '';
+$sql = "SELECT username, client_image FROM tbl_clients WHERE client_id = ?";
+$stmt = $DB_con->prepare($sql);
+$stmt->execute([$client_id]);
+$cater = $stmt->fetch();
+$caterName = $cater['username'];
+$clientImagePath = '../../assets/img/client-images/' . $cater['client_image'];
+
+// Get extracted date
+$extractedDate = date('Y-m-d');
+
+// Handle export functionality
+if (isset($_GET['export']) && $_GET['export'] == 'true') {
+    if (empty($outstandings)) {
+        echo "<script>alert('No data available to export.'); window.history.back();</script>";
+        exit();
+    }
+
+    // Create a new Spreadsheet object
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    if (!empty($clientImagePath) && file_exists($clientImagePath)) {
+        // Add client logo
+        $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+        $drawing->setName('Logo');
+        $drawing->setDescription('Client Logo');
+        $drawing->setPath($clientImagePath);
+        $drawing->setHeight(80);
+        $drawing->setCoordinates('D1');
+        $drawing->setWorksheet($sheet);
+    } else {
+        $sheet->setCellValue('A1', 'No Image Available');
+    }
+
+    // Add cater name and extracted date
+    $sheet->setCellValue('A3', 'Cater Name: ' . $caterName);
+    $sheet->setCellValue('A4', 'Extracted Date: ' . $extractedDate);
+
+    // Style cater name and extracted date
+    $sheet->getStyle('A3:A4')->applyFromArray([
+        'font' => [
+            'bold' => true,
+            'size' => 14,
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ],
+    ]);
+
+    // Table headers
+    $sheet->setCellValue('A10', 'Transaction No.');
+    $sheet->setCellValue('B10', 'Customer');
+    $sheet->setCellValue('C10', 'Platform Fee');
+    $sheet->setCellValue('D10', 'Status');
+    $sheet->setCellValue('E10', 'Collection Date');
+
+    // Style table headers
+    $headerStyle = [
+        'font' => [
+            'bold' => true,
+            'size' => 12,
+            'color' => ['rgb' => 'FFFFFF'],
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => '142d4c'],
+        ],
+    ];
+    $sheet->getStyle('A10:E10')->applyFromArray($headerStyle);
+
+    // Populate data rows
+    $row = 11;
+    foreach ($outstandings as $outstanding) {
+        $sheet->setCellValue('A' . $row, $outstanding['transactionNo']);
+        $sheet->setCellValue('B' . $row, $outstanding['username']);
+        $sheet->setCellValue('C' . $row, $outstanding['tax']);
+        $sheet->setCellValue('D' . $row, $outstanding['status'] == 'Not Paid' || $outstanding['status'] == '' ? 'Not Paid' : 'Paid');
+        $sheet->setCellValue('E' . $row, $outstanding['month']);
+        $row++;
+    }
+
+    // Add borders to data rows
+    $lastRow = $row - 1;
+    $sheet->getStyle('A11:E' . $lastRow)->applyFromArray([
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+    ]);
+
+    // Set column widths
+    $sheet->getColumnDimension('A')->setAutoSize(true);
+    $sheet->getColumnDimension('B')->setAutoSize(true);
+    $sheet->getColumnDimension('C')->setAutoSize(true);
+    $sheet->getColumnDimension('D')->setAutoSize(true);
+    $sheet->getColumnDimension('E')->setAutoSize(true);
+
+    // Write file and download
+    $writer = new Xlsx($spreadsheet);
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="outstanding_fee_report_' . date('Y-m-d') . '.xlsx"');
+    header('Cache-Control: max-age=0');
+    $writer->save('php://output');
+    exit();
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -66,9 +187,9 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Revenue per month</b>
                                 &nbsp; | &nbsp;
-                                <button type="button" class="btn-get-main" id="exportButton">
+                                <a href="outstanding-fee.php?export=true" class="btn-get-main" style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
-                                </button>
+                                </a>
                             </div>
                             &nbsp;
                             <form action="outstanding-revenue.php" method="GET" class="form-inline">
@@ -188,28 +309,6 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
     <!-- Include jQuery library -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
-    <!-- Export to excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
-
-
-    <script>
-        document.getElementById('exportButton').addEventListener('click', function () {
-            // Get table data
-            var table = document.getElementById('datatablesSimple');
-            var sheet = XLSX.utils.table_to_sheet(table);
-
-            // Convert sheet to Excel file
-            var workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, sheet, 'Outstanding Revenue Report');
-
-            // Save the Excel file
-            var today = new Date().toISOString().slice(0, 10); // Get today's date
-            var filename = 'outstanding_revenue_report_' + today + '.xlsx';
-            XLSX.writeFile(workbook, filename);
-        });
-
-
-    </script>
 
 
     <script src="../vendor/js/datatables-simple-demo.js"></script>
