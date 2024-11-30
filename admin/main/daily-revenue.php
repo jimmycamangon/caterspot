@@ -1,6 +1,10 @@
 <?php
 include_once 'functions/fetch-daily-revenue.php';
 require_once 'functions/sessions.php';
+require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 redirectToLogin();
 
@@ -8,7 +12,101 @@ redirectToLogin();
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t'); // t gives last day of the month
 
+// Fetch admin name
+$adminName = '';
+$sql = "SELECT username FROM tbl_admin WHERE admin_id = ?";
+$stmt = $DB_con->prepare($sql);
+$stmt->execute([$_SESSION['admin_id']]);
+$admin = $stmt->fetch();
+$adminName = $admin['username'];
 
+// Check if there's data to export (if export query parameter is set)
+if (isset($_GET['export']) && $_GET['export'] == 'true') {
+    if (empty($taxs)) {
+        echo "<script>alert('No data available to export.'); window.history.back();</script>";
+        exit();
+    }
+
+    // Create a new Spreadsheet object
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Add admin name and exported date to the spreadsheet
+    $sheet->setCellValue('A2', 'Daily Revenue');
+    $sheet->setCellValue('A3', 'Name: ' . $adminName);
+    $sheet->setCellValue('A4', 'Exported Date: ' . date('Y-m-d'));
+
+    // Style admin name and date
+    $sheet->getStyle('A2:A4')->applyFromArray([
+        'font' => [
+            'bold' => true,
+            'size' => 14, // Increased font size
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ],
+    ]);
+
+    // Table headers for export (now starting at row 6 instead of 10)
+    $sheet->setCellValue('A6', 'Transaction No.');
+    $sheet->setCellValue('B6', 'Client');
+    $sheet->setCellValue('C6', 'Revenue');
+    $sheet->setCellValue('D6', 'Collected at');
+
+    // Style table headers
+    $headerStyle = [
+        'font' => [
+            'bold' => true,
+            'size' => 12,
+            'color' => ['rgb' => 'FFFFFF'],
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => '142d4c'],
+        ],
+    ];
+    $sheet->getStyle('A6:D6')->applyFromArray($headerStyle);
+
+    // Populate data rows for export (starting from row 7)
+    $row = 7;
+    foreach ($taxs as $tax) {
+        $sheet->setCellValue('A' . $row, $tax['transactionNo']);
+        $sheet->setCellValue('B' . $row, $tax['username']);
+        $sheet->setCellValue('C' . $row, $tax['tax']);
+        $sheet->setCellValue('D' . $row, $tax['day']);
+        $row++;
+    }
+
+    // Add borders to data rows
+    $lastRow = $row - 1;
+    $sheet->getStyle('A7:D' . $lastRow)->applyFromArray([
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+    ]);
+
+    // Set column widths
+    $sheet->getColumnDimension('A')->setAutoSize(true);
+    $sheet->getColumnDimension('B')->setAutoSize(true);
+    $sheet->getColumnDimension('C')->setAutoSize(true);
+    $sheet->getColumnDimension('D')->setAutoSize(true);
+
+    // Write file and download
+    $writer = new Xlsx($spreadsheet);
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="daily_revenue_report_' . date('Y-m-d') . '.xlsx"');
+    header('Cache-Control: max-age=0');
+    $writer->save('php://output');
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -66,9 +164,10 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t'); // t gi
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Revenue per day</b>
                                 &nbsp; | &nbsp;
-                                <button type="button" class="btn-get-main" id="exportButton">
+                                <a href="daily-revenue.php?export=true" class="btn-get-main"
+                                    style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
-                                </button>
+                                </a>
                             </div>
                             &nbsp;
                             <form action="daily-revenue.php" method="GET">

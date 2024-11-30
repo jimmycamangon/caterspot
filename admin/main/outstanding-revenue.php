@@ -1,6 +1,10 @@
 <?php
 include_once 'functions/fetch-monthly-revenue-outstanding.php';
 require_once 'functions/sessions.php';
+require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 redirectToLogin();
 
@@ -8,7 +12,109 @@ redirectToLogin();
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : '';
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
 
+// Check if there's data to export (if export query parameter is set)
+if (isset($_GET['export']) && $_GET['export'] == 'true') {
+    if (empty($outstandings)) {
+        echo "<script>alert('No data available to export.'); window.history.back();</script>";
+        exit();
+    }
+
+    // Create a new Spreadsheet object
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Fetch admin name for the exported sheet
+    $adminName = '';
+    $sql = "SELECT username FROM tbl_admin WHERE admin_id = ?";
+    $stmt = $DB_con->prepare($sql);
+    $stmt->execute([$_SESSION['admin_id']]);
+    $admin = $stmt->fetch();
+    $adminName = $admin['username'];
+
+    // Add admin name and exported date to the spreadsheet
+    $sheet->setCellValue('A2', 'Outstanding Revenues');
+    $sheet->setCellValue('A3', 'Name: ' . $adminName);
+    $sheet->setCellValue('A4', 'Exported Date: ' . date('Y-m-d'));
+
+    // Style admin name and date
+    $sheet->getStyle('A2:A4')->applyFromArray([
+        'font' => [
+            'bold' => true,
+            'size' => 14, // Increased font size
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ],
+    ]);
+
+    // Table headers for export
+    $sheet->setCellValue('A6', 'Transaction No.');
+    $sheet->setCellValue('B6', 'Cater');
+    $sheet->setCellValue('C6', 'Platform Fee');
+    $sheet->setCellValue('D6', 'Status');
+    $sheet->setCellValue('E6', 'Collection Date');
+
+    // Style table headers
+    $headerStyle = [
+        'font' => [
+            'bold' => true,
+            'size' => 12,
+            'color' => ['rgb' => 'FFFFFF'],
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => '142d4c'],
+        ],
+    ];
+    $sheet->getStyle('A6:E6')->applyFromArray($headerStyle);
+
+    // Populate data rows for export
+    $row = 7;
+    foreach ($outstandings as $outstanding) {
+        // Check if the status is empty or null, and set to 'Not Paid' if so
+        $status = empty($outstanding['status']) ? 'Not Paid' : $outstanding['status'];
+
+        $sheet->setCellValue('A' . $row, $outstanding['transactionNo']);
+        $sheet->setCellValue('B' . $row, $outstanding['username']);
+        $sheet->setCellValue('C' . $row, $outstanding['tax']);
+        $sheet->setCellValue('D' . $row, $status); // Use the adjusted status
+        $sheet->setCellValue('E' . $row, $outstanding['month']);
+        $row++;
+    }
+
+    // Add borders to data rows
+    $lastRow = $row - 1;
+    $sheet->getStyle('A7:E' . $lastRow)->applyFromArray([
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+    ]);
+
+    // Set column widths
+    $sheet->getColumnDimension('A')->setAutoSize(true);
+    $sheet->getColumnDimension('B')->setAutoSize(true);
+    $sheet->getColumnDimension('C')->setAutoSize(true);
+    $sheet->getColumnDimension('D')->setAutoSize(true);
+    $sheet->getColumnDimension('E')->setAutoSize(true);
+
+    // Write file and download
+    $writer = new Xlsx($spreadsheet);
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="outstanding_revenue_report_' . date('Y-m-d') . '.xlsx"');
+    header('Cache-Control: max-age=0');
+    $writer->save('php://output');
+    exit();
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -66,9 +172,10 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Revenue per month</b>
                                 &nbsp; | &nbsp;
-                                <button type="button" class="btn-get-main" id="exportButton">
+                                <a href="outstanding-revenue.php?export=true" class="btn-get-main"
+                                    style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
-                                </button>
+                                </a>
                             </div>
                             &nbsp;
                             <form action="outstanding-revenue.php" method="GET" class="form-inline">
@@ -196,28 +303,6 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
     <!-- Include jQuery library -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
-    <!-- Export to excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
-
-
-    <script>
-        document.getElementById('exportButton').addEventListener('click', function () {
-            // Get table data
-            var table = document.getElementById('datatablesSimple');
-            var sheet = XLSX.utils.table_to_sheet(table);
-
-            // Convert sheet to Excel file
-            var workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, sheet, 'Outstanding Revenue Report');
-
-            // Save the Excel file
-            var today = new Date().toISOString().slice(0, 10); // Get today's date
-            var filename = 'outstanding_revenue_report_' + today + '.xlsx';
-            XLSX.writeFile(workbook, filename);
-        });
-
-
-    </script>
 
 
     <script src="../vendor/js/datatables-simple-demo.js"></script>

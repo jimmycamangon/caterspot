@@ -2,6 +2,10 @@
 include_once 'functions/fetch-daily-revenue.php';
 require_once 'functions/sessions.php';
 require_once '../../config/conn.php'; // Include database connection
+require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 redirectToLogin();
 
@@ -51,6 +55,95 @@ try {
     echo json_encode(['error' => $e->getMessage()]);
 }
 
+// Check if there's data to export (if export query parameter is set)
+if (isset($_GET['export']) && $_GET['export'] == 'true') {
+    if (empty($topCaterers)) {
+        echo "<script>alert('No data available to export.'); window.history.back();</script>";
+        exit();
+    }
+
+    // Create a new Spreadsheet object
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Fetch admin name for the exported sheet
+    $adminName = '';
+    $sql = "SELECT username FROM tbl_admin WHERE admin_id = ?";
+    $stmt = $DB_con->prepare($sql);
+    $stmt->execute([$_SESSION['admin_id']]);
+    $admin = $stmt->fetch();
+    $adminName = $admin['username'];
+
+    // Add admin name and exported date to the spreadsheet
+    $sheet->setCellValue('A2', 'Top Performing Caterers');
+    $sheet->setCellValue('A3', 'Name: ' . $adminName);
+    $sheet->setCellValue('A4', 'Exported Date: ' . date('Y-m-d'));
+
+    // Style admin name and date
+    $sheet->getStyle('A2:A4')->applyFromArray([
+        'font' => [
+            'bold' => true,
+            'size' => 14, // Increased font size
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ],
+    ]);
+
+    // Table headers for export
+    $sheet->setCellValue('A6', 'Caterer');
+    $sheet->setCellValue('B6', 'Average Rating');
+
+    // Style table headers
+    $headerStyle = [
+        'font' => [
+            'bold' => true,
+            'size' => 12,
+            'color' => ['rgb' => 'FFFFFF'],
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => '142d4c'],
+        ],
+    ];
+    $sheet->getStyle('A6:B6')->applyFromArray($headerStyle);
+
+    // Populate data rows for export
+    $row = 7;
+    foreach ($topCaterers as $caterer) {
+        $sheet->setCellValue('A' . $row, $caterer['username']);
+        $sheet->setCellValue('B' . $row, number_format($caterer['average_rating'], 2));
+        $row++;
+    }
+
+    // Add borders to data rows
+    $lastRow = $row - 1;
+    $sheet->getStyle('A7:B' . $lastRow)->applyFromArray([
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+    ]);
+
+    // Set column widths
+    $sheet->getColumnDimension('A')->setAutoSize(true);
+    $sheet->getColumnDimension('B')->setAutoSize(true);
+
+    // Write file and download
+    $writer = new Xlsx($spreadsheet);
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="top_caterers_' . date('Y-m-d') . '.xlsx"');
+    header('Cache-Control: max-age=0');
+    $writer->save('php://output');
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -108,9 +201,10 @@ try {
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>Top Caterers by Average Rating</b>
                                 &nbsp; | &nbsp;
-                                <button type="button" class="btn-get-main" id="exportButton">
+                                <a href="top-cater-permonth.php?export=true" class="btn-get-main"
+                                    style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
-                                </button>
+                                </a>
                             </div>
                             &nbsp;
                             <form action="top-cater-permonth.php" method="GET">
@@ -169,16 +263,6 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
         crossorigin="anonymous"></script>
 
-    <!-- Export to excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
-
-    <script>
-        document.getElementById('exportButton').addEventListener('click', function () {
-            const table = document.getElementById('datatablesSimple');
-            const wb = XLSX.utils.table_to_book(table, { sheet: "Top Caterers" });
-            XLSX.writeFile(wb, 'Top_Caterers_Report.xlsx');
-        });
-    </script>
     <script src="../vendor/js/datatables-simple-demo.js"></script>
 </body>
 
