@@ -1,12 +1,15 @@
 <?php
-include_once 'functions/fetch-daily-revenue.php';
 require_once 'functions/sessions.php';
 require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
 
+include_once 'functions/fetch-daily-revenue.php';
+redirectToLogin();
+
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-redirectToLogin();
+
 
 // Default to current month's data if no filter is applied
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
@@ -71,14 +74,21 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
         ],
     ];
     $sheet->getStyle('A6:D6')->applyFromArray($headerStyle);
-
     // Populate data rows for export (starting from row 7)
     $row = 7;
     foreach ($taxs as $tax) {
+        // Calculate the collected date based on startDate and day offset
+        $collectedDate = date('Y-m-d', strtotime($startDate . ' + ' . ($tax['day'] - 1) . ' days'));
+
+        // Populate the cells
         $sheet->setCellValue('A' . $row, $tax['transactionNo']);
         $sheet->setCellValue('B' . $row, $tax['username']);
         $sheet->setCellValue('C' . $row, $tax['tax']);
-        $sheet->setCellValue('D' . $row, $tax['day']);
+        $sheet->setCellValue('D' . $row, $collectedDate);
+
+        // Format the D column as a date
+        $sheet->getStyle('D' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_YYYYMMDD);
+
         $row++;
     }
 
@@ -107,6 +117,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     $writer->save('php://output');
     exit();
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -203,6 +214,10 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 </thead>
                                 <tbody>
                                     <?php foreach ($taxs as $tax): ?>
+                                        <?php
+                                        // Calculate the actual date using the start date and the day offset
+                                        $collectedDate = date('Y-m-d', strtotime($startDate . ' + ' . ($tax['day'] - 1) . ' days'));
+                                        ?>
                                         <tr>
                                             <td>
                                                 <?php echo $tax['transactionNo']; ?>
@@ -214,7 +229,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                                 <?php echo $tax['tax']; ?>
                                             </td>
                                             <td>
-                                                <b>Day</b> <?php echo $tax['day']; ?>
+                                                <b><?php echo $collectedDate; ?></b>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -267,25 +282,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     <!-- Include jQuery library -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
-    <!-- Export to excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
 
-    <script>
-        document.getElementById('exportButton').addEventListener('click', function () {
-            // Get table data
-            var table = document.getElementById('datatablesSimple');
-            var sheet = XLSX.utils.table_to_sheet(table);
-
-            // Convert sheet to Excel file
-            var workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, sheet, 'Revenue Report');
-
-            // Save the Excel file
-            var today = new Date().toISOString().slice(0, 10); // Get today's date
-            var filename = 'revenue_report_' + today + '.xlsx';
-            XLSX.writeFile(workbook, filename);
-        });
-    </script>
 
 
     <script src="../vendor/js/datatables-simple-demo.js"></script>

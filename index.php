@@ -6,10 +6,11 @@ if (isset($_GET['query'])) {
     $query = "%" . $_GET['query'] . "%"; // Prepare the search term with wildcards
 
     // Fetch data from the database
-    $stmt = $DB_con->prepare("SELECT A.cater_name, A.cater_description, A.client_id, 
+    $stmt = $DB_con->prepare("SELECT A.cater_name, A.cater_description, A.client_id, C.status,
     COALESCE(SUM(B.rate), 0) AS total_rating
     FROM tblclient_settings AS A
     LEFT JOIN tbl_feedbacks AS B ON A.client_id = B.client_id
+    LEFT JOIN tbl_clients AS C ON A.client_id = C.client_id
     WHERE A.cater_name LIKE ?
     GROUP BY A.cater_name, A.cater_description, A.client_id");
 
@@ -19,9 +20,10 @@ if (isset($_GET['query'])) {
     echo json_encode($cateringServices); // Return results as JSON
 } else {
     // Fetch data from the database
-    $stmt = $DB_con->prepare("SELECT A.cater_name, A.cater_description, A.client_id, SUM(B.rate) AS total_rating
+    $stmt = $DB_con->prepare("SELECT A.cater_name, A.cater_description, A.client_id, SUM(B.rate) AS total_rating, C.status
 FROM tblclient_settings AS A
 LEFT JOIN tbl_feedbacks AS B ON A.client_id = B.client_id
+LEFT JOIN tbl_clients AS C ON A.client_id = C.client_id
 GROUP BY A.cater_name, A.cater_description, A.client_id
 ORDER BY total_rating DESC");
     $stmt->execute();
@@ -506,11 +508,20 @@ $additionalCatering = array_slice($cateringServices, $initialCount);
                         <h4>Our Services</h4>
                         <ul>
                             <?php foreach ($cateringServices as $footerCater): ?>
-                                <li><i class="bx bx-chevron-right"></i> <a
-                                        href="view.php?cater=<?php echo $footerCater['cater_name']; ?>&id=<?php echo $footerCater['client_id']; ?>"><?php echo $footerCater['cater_name'] ?></a>
+                                <li><i class="bx bx-chevron-right"></i>
+                                    <?php if (empty($footerCater['status']) || $footerCater['status'] === null): ?>
+                                        <!-- Service not available, show a non-clickable link or message -->
+                                        <span class="text-muted"><?php echo $footerCater['cater_name']; ?> (Service Coming
+                                            Soon)</span>
+                                    <?php else: ?>
+                                        <!-- Service available, show clickable link -->
+                                        <a
+                                            href="view.php?cater=<?php echo urlencode($footerCater['cater_name']); ?>&id=<?php echo urlencode($footerCater['client_id']); ?>"><?php echo $footerCater['cater_name']; ?></a>
+                                    <?php endif; ?>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
+
                     </div>
 
 
@@ -720,13 +731,18 @@ $additionalCatering = array_slice($cateringServices, $initialCount);
                 const topRatedClass = isTopRated ? 'top-rated' : ''; // Add class for styling top-rated services
 
                 card.innerHTML = `
-        <div class="icon-box ${topRatedClass}">
-            <p class="description py-2">${ratingDisplay}</p>
-            <h4 class="title"><a href="#">${catering.cater_name}</a></h4>
-            <p class="description py-2">${catering.cater_description || "No Description Provided"}</p>
-            <a href="view.php?cater=${encodeURIComponent(catering.cater_name)}&id=${encodeURIComponent(catering.client_id)}" class="btn-learn-more">View Services</a>
-        </div>
-    `;
+                    <div class="icon-box ${topRatedClass}">
+                        <p class="description py-2">${ratingDisplay}</p>
+                        <h4 class="title"><a href="#">${catering.cater_name}</a></h4>
+                        <p class="description py-2">${catering.cater_description || "No Description Provided"}</p>
+
+                        <!-- Conditional logic to check catering status -->
+                        ${catering.status === "" || catering.status === null ?
+                        `<span class="badge bg-secondary">Service Coming Soon</span>` :
+                        `<a href="view.php?cater=${encodeURIComponent(catering.cater_name)}&id=${encodeURIComponent(catering.client_id)}" class="btn-learn-more">View Services</a>`
+                    }
+                    </div>
+                    `;
 
                 return card;
             }

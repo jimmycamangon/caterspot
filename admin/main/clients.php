@@ -75,6 +75,7 @@ redirectToLogin();
                                         <th>Image</th>
                                         <th>Contact</th>
                                         <th>Address</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -99,6 +100,21 @@ redirectToLogin();
                                                 <?php echo $client['address']; ?>
                                             </td>
                                             <td>
+                                                <center>
+                                                    <?php
+                                                    if ($client['status'] == "Unavailable" || $client['status'] == ""): ?>
+                                                        <span class="badge bg-danger">Unavailable</span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-success">Available</span>
+                                                    <?php endif; ?>
+                                                </center>
+                                            </td>
+                                            <td>
+                                                <button class="btn-get-main edit-btn" data-toggle="modal"
+                                                    data-target="#editStatus"
+                                                    data-status-id="<?php echo $client['client_id'] ?>"><i
+                                                        class="fa-solid fa-pen-to-square"></i>
+                                                    Edit Status</button>
                                                 <button class="btn-get-del" data-toggle="modal" data-target="#DeleteModal"
                                                     data-client-id="<?php echo $client['client_id'] ?>"><i
                                                         class="fa-solid fa-trash"></i>
@@ -167,6 +183,37 @@ redirectToLogin();
         </div>
     </div>
 
+    <div class="modal fade" id="editStatus" tabindex="-1" role="dialog" aria-labelledby="editStatusLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editStatusLabel">Edit Status</h5>
+                    <i class="fa-solid fa-xmark" style="font-size:20px; cursor:pointer;" data-dismiss="modal"
+                        aria-label="Close"></i>
+                </div>
+                <div class="modal-body">
+                    <div id="editMessage"></div>
+
+                    <!-- Edit form -->
+                    <div id="editPackageForm">
+                        <!-- Dropdown for availability -->
+                        <div class="form-group">
+                            <label for="edit_status">Status:</label>
+                            <select class="form-control" id="edit_status" name="edit_status">
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-get-del" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn-get-main" id="saveChangesBtn">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="DeleteModal" tabindex="-1" role="dialog" aria-labelledby="DeleteModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
@@ -212,7 +259,7 @@ redirectToLogin();
     </script>
     <script src="functions/js/add-clients.js"></script>
     <script src="functions/js/delete-client.js"></script>
-    <script src="functions/js/edit-fetchimage-package.js"></script>
+    <script src="functions/js/edit-available.js"></script>
 </body>
 
 </html>

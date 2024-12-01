@@ -6,6 +6,7 @@ require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpr
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 // Fetch cater name and image
 $client_id = $_SESSION['client_id'];
@@ -82,15 +83,23 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     ];
     $sheet->getStyle('A10:D10')->applyFromArray($headerStyle);
 
-    // Populate data rows
-    $row = 11;
-    foreach ($revenues as $revenue) {
-        $sheet->setCellValue('A' . $row, $revenue['transactionNo']);
-        $sheet->setCellValue('B' . $row, $revenue['username']);
-        $sheet->setCellValue('C' . $row, $revenue['revenue']);
-        $sheet->setCellValue('D' . $row, $revenue['collectedAt']);
-        $row++;
-    }
+// Populate data rows
+$row = 11;
+foreach ($revenues as $revenue) {
+    // Calculate the collected date if needed
+    $collectedDate = date('Y-m-d', strtotime($startDate . ' + ' . ($revenue['day'] - 1) . ' days'));
+
+    // Populate the cells
+    $sheet->setCellValue('A' . $row, $revenue['transactionNo']);
+    $sheet->setCellValue('B' . $row, $revenue['username']);
+    $sheet->setCellValue('C' . $row, $revenue['revenue']);
+    $sheet->setCellValue('D' . $row, $collectedDate);
+
+    // Format the D column as a date
+    $sheet->getStyle('D' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_YYYYMMDD);
+
+    $row++;
+}
 
     // Add borders to data rows
     $lastRow = $row - 1;
@@ -166,7 +175,8 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 <b>List of Revenue per day</b>
                                 &nbsp; | &nbsp;
                                 <!-- Export Button Trigger -->
-                                <a href="daily-revenue.php?export=true" class="btn-get-main" style="text-decoration:none;color:white;">
+                                <a href="daily-revenue.php?export=true" class="btn-get-main"
+                                    style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>
                             </div>
@@ -205,13 +215,19 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 </thead>
                                 <tbody>
                                     <?php foreach ($revenues as $revenue): ?>
+                                        <?php
+                                        // Calculate the actual date using the start date and the day offset
+                                        $collectedDate = date('Y-m-d', strtotime($startDate . ' + ' . ($revenue['day'] - 1) . ' days'));
+                                        ?>
                                         <tr>
                                             <td><?php echo $revenue['transactionNo']; ?></td>
                                             <td><?php echo $revenue['username']; ?></td>
                                             <td><?php echo $revenue['revenue']; ?></td>
-                                            <td><b>Day</b> <?php echo $revenue['day']; ?></td>
+                                            <td><b><?php echo $collectedDate; ?></b></td>
+                                            <!-- Display the calculated date -->
                                         </tr>
                                     <?php endforeach; ?>
+
                                 </tbody>
                             </table>
                         </div>

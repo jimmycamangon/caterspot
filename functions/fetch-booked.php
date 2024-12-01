@@ -8,7 +8,7 @@ if (isset($_GET['id'])) {
 
         $id = $_GET['id'];
         // Prepare the SQL statement to fetch orders
-        $sql = "SELECT A.* FROM tbl_orders AS A LEFT JOIN tblclient_settings AS B ON A.cater = B.cater_name WHERE B.client_id = :id AND A.status = 'Pending' OR A.status = 'Booked';";
+        $sql = "SELECT A.* FROM tbl_orders AS A LEFT JOIN tblclient_settings AS B ON A.cater = B.cater_name WHERE B.client_id = :id AND A.status = 'Pending' OR A.status = 'Booked' ORDER BY A.order_date DESC ";
 
         // Prepare the SQL statement
         $stmt = $DB_con->prepare($sql);

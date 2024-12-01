@@ -11,10 +11,10 @@ $client_id = $_SESSION['client_id'];
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01'); // First day of the current month
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');   // Last day of the current month
 
-// Adjust endDate to 23:59:59 for the last day of the previous month
-if ($startDate && $endDate) {
-    $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
-}
+// // Adjust endDate to 23:59:59 for the last day of the previous month
+// if ($startDate && $endDate) {
+//     $endDate = date('Y-m-d 23:59:59', strtotime($endDate));
+// }
 
 // Prepare the base query to count statuses, including the client_id condition
 $query = "
@@ -374,7 +374,7 @@ if ($startDate && $endDate && $startDate !== date('Y-m-01') && $endDate !== date
 
                 <div class="modal-footer">
                     <button type="button" class="btn-get-main" data-dismiss="modal">
-                        <a href="setting.php" style="color:white;text-decoration:none;">Update Now</a>
+                        <a href="settings.php" style="color:white;text-decoration:none;">Update Now</a>
                     </button>
                 </div>
             </div>

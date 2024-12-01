@@ -4,17 +4,15 @@ require_once '../../../../config/conn.php';
 
 try {
     // Get start_date and end_date from request
-    $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01'); // First day of the current month
-    $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');   // Last day of the current month
-    
+    $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d');
+    $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
 
-    // Prepare the SQL query to fetch the revenue collected for each day within the date range
-    $sql = "SELECT t1.day AS day, SUM(t2.revenue) AS total_revenue
-            FROM tblref_day t1 
-            LEFT JOIN tblclient_revenue_stats t2 ON t1.day = DAY(t2.collectedAt) 
+    // Prepare the SQL query to fetch the revenue collected for each date within the range
+    $sql = "SELECT DATE(t2.collectedAt) AS collected_date, SUM(t2.revenue) AS total_revenue
+            FROM tblclient_revenue_stats t2
             WHERE t2.collectedAt BETWEEN :start_date AND :end_date
             AND t2.client_id = :client_id
-            GROUP BY t1.day";
+            GROUP BY DATE(t2.collectedAt)";
 
     // Execute the query
     $stmt = $DB_con->prepare($sql);

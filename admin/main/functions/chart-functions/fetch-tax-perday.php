@@ -8,11 +8,10 @@ try {
     $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');   // Last day of the current month
 
     // Prepare the SQL query to fetch the tax collected for each day within the date range
-    $sql = "SELECT t1.day AS day, SUM(t2.tax) AS total_tax 
-            FROM tblref_day t1 
-            LEFT JOIN tbladmin_taxcollected_stats t2 ON t1.day = DAY(t2.collectedAt) 
+    $sql = "SELECT DATE(t2.collectedAt) AS date_collected, SUM(t2.tax) AS total_tax 
+            FROM tbladmin_taxcollected_stats t2
             WHERE t2.collectedAt BETWEEN :start_date AND :end_date AND t2.status = 'Paid'
-            GROUP BY t1.day";
+            GROUP BY DATE(t2.collectedAt)";
 
     // Execute the query
     $stmt = $DB_con->prepare($sql);

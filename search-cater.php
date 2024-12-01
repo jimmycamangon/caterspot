@@ -10,10 +10,11 @@ if (isset($_GET['query'])) {
 
     try {
         // Fetch data from the database including average rating
-        $stmt = $DB_con->prepare("SELECT A.cater_name, A.cater_description, A.client_id, 
+        $stmt = $DB_con->prepare("SELECT A.cater_name, A.cater_description, A.client_id, C.status,
             COALESCE(AVG(B.rate), 0) AS average_rating
             FROM tblclient_settings AS A
             LEFT JOIN tbl_feedbacks AS B ON A.client_id = B.client_id
+            LEFT JOIN tbl_clients AS C ON A.client_id = C.client_id
             WHERE A.cater_name LIKE ?
             GROUP BY A.cater_name, A.cater_description, A.client_id
             ORDER BY average_rating DESC");
@@ -30,10 +31,11 @@ if (isset($_GET['query'])) {
     // If no query is provided, fetch all catering services
     try {
         // Fetch data from the database including average rating
-        $stmt = $DB_con->prepare("SELECT A.cater_name, A.cater_description, A.client_id, 
+        $stmt = $DB_con->prepare("SELECT A.cater_name, A.cater_description, A.client_id, C.status,
             AVG(B.rate) AS average_rating
             FROM tblclient_settings AS A
             LEFT JOIN tbl_feedbacks AS B ON A.client_id = B.client_id
+            LEFT JOIN tbl_clients AS C ON A.client_id = C.client_id
             GROUP BY A.cater_name, A.cater_description, A.client_id
             ORDER BY average_rating DESC");
 

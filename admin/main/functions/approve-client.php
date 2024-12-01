@@ -49,30 +49,40 @@ if (isset($_POST['client_id']) && isset($_POST['status'])) {
 
                 $mail2->Subject = $subject;
                 $mail2->Body = '
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>CaterSpot Application Status Update</title>
-                    </head>
-                    <body>
-                        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-                            <div style="padding: 20px; border-bottom: 1px solid #ddd;">
-                                <h2>CaterSpot Application Status Update</h2>
-                            </div>
-                            <div style="padding: 20px;">
-                                <p>Dear ' . htmlspecialchars($client['owner']) . ',</p>
-                                <p>We are pleased to inform you that your application has been approved. Our team will reach out to you shortly to discuss the next steps and finalize the necessary agreements. Should you have any questions in the meantime, please feel free to contact us.</p>
-                                <p>As part of our commitment to security, we kindly request that you update your temporary password as soon as possible by accessing your profile settings. This will help safeguard your account and ensure the integrity of your information.</p>
-                                <p>Thank you for choosing CaterSpot.</p>
-                            </div>
-                            <div style="padding: 20px; border-top: 1px solid #ddd; text-align: center;">
-                                <p>&copy; 2024 CaterSpot. All rights reserved.</p>
-                            </div>
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>CaterSpot Application Status Update</title>
+                </head>
+                <body>
+                    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+                        <div style="padding: 20px; border-bottom: 1px solid #ddd;">
+                            <h2>CaterSpot Application Status Update</h2>
                         </div>
-                    </body>
-                    </html>
+                        <div style="padding: 20px;">
+                            <p>Dear ' . htmlspecialchars($client['owner']) . ',</p>
+                            <p>We are pleased to inform you that your application has been approved. Our team will reach out to you shortly to discuss the next steps and finalize the necessary agreements. Should you have any questions in the meantime, please feel free to contact us.</p>
+                            
+                            <p>As part of our commitment to security, we kindly request that you update your temporary password as soon as possible by accessing your profile settings. This will help safeguard your account and ensure the integrity of your information.</p>
+            
+                            <p>Here are your login credentials:</p>
+                            <ul>
+                                <li><strong>Email:</strong> ' . htmlspecialchars($client['gmail']) . '</li>
+                                <li><strong>Temporary Password:</strong> T3mp0r@ry</li>
+                            </ul>
+            
+                            <p>Please use the above email and temporary password to log into your portal. You will be prompted to change your password upon first login to ensure the security of your account.</p>
+            
+                            <p>Thank you for choosing CaterSpot.</p>
+                        </div>
+                        <div style="padding: 20px; border-top: 1px solid #ddd; text-align: center;">
+                            <p>&copy; 2024 CaterSpot. All rights reserved.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
             ';
 
 

@@ -13,14 +13,14 @@ function fetchDataFromPHP() {
 // Function to populate the chart
 function populateChart(data) {
     // Extract data for labels and datasets
-    const labels = data.map(entry => 'Day ' + entry.day);
+    const labels = data.map(entry => entry.date_collected); // Use the actual date for labels
     const taxData = data.map(entry => entry.total_tax);
 
     // Calculate the max value from the taxData
     const maxTax = Math.max(...taxData);
 
     // Determine the adjusted max value (round it up to the next highest value, e.g., 80000, 2000000, etc.)
-    const adjustedMax = Math.ceil(maxTax * 1.1);  // Increase by 20% as an example
+    const adjustedMax = Math.ceil(maxTax * 1.1);  // Increase by 10% as an example
 
     // Prepare the data for the chart
     const chartData = {

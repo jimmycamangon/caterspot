@@ -8,6 +8,8 @@ if (isset($_SESSION['admin_id'])) {
     $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
     $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');
 
+    
+
     // Prepare the SQL statement
     $sql = "SELECT t2.transactionNo, t3.username, t2.tax, t2.collectedAt, t1.day AS day, SUM(t2.tax) AS total_tax
             FROM tblref_day t1
