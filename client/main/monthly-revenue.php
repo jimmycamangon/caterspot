@@ -1,6 +1,5 @@
 <?php
-include_once 'functions/fetch-monthly-revenue.php';
-include_once 'functions/fetch-monthly-revenue-outstanding.php';
+require_once '../../config/conn.php';
 require_once 'functions/sessions.php';
 require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
 
@@ -8,6 +7,11 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 redirectToLogin();
+
+
+$startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
+$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');
+include_once 'functions/fetch-monthly-revenue.php';
 
 // Fetch cater name and image
 $client_id = $_SESSION['client_id'];
@@ -180,7 +184,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Revenue per month</b>
                                 &nbsp; | &nbsp;
-                                <a href="monthly-revenue.php?export=true" class="btn-get-main" style="text-decoration:none;color:white;">
+                                <a href="monthly-revenue.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main" style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>
                             </div>

@@ -70,9 +70,10 @@ document.addEventListener("DOMContentLoaded", function () {
     var today = new Date();
     today.setHours(0, 0, 0, 0); // Set time to 00:00:00 for accurate comparison
 
+    var selectedDate = new Date(eventDate);
 
-    // Check if the selected event date is a past date
-    if (new Date(eventDate) < today) {
+    // Show warning message if the date is less than today or less than one month from now
+    if (selectedDate < today || selectedDate < oneMonthFromNow) {
       warningMessage.style.display = "flex"; // Show the warning message
     } else {
       warningMessage.style.display = "none"; // Hide the warning message

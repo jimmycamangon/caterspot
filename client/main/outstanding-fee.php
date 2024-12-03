@@ -1,5 +1,5 @@
 <?php
-include_once 'functions/fetch-outstanding.php';
+require_once '../../config/conn.php';
 require_once 'functions/sessions.php';
 require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // PhpSpreadsheet library
 
@@ -11,6 +11,7 @@ redirectToLogin();
 // Initialize variables for date filtering
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : '';
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
+include_once 'functions/fetch-outstanding.php';
 
 // Fetch cater name and image
 $client_id = $_SESSION['client_id'];
@@ -178,21 +179,21 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                     <br>
                     <ol class="breadcrumb mb-4">
                         <li class="breadcrumb-item"><a href="index.php" class="link-ref">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Monthly Revenue</li>
+                        <li class="breadcrumb-item active">Outstanding Fee</li>
                     </ol>
 
                     <div class="card mb-4">
                         <div class="card-header">
                             <div class="form-group">
                                 <i class="fa-solid fa-cube"></i>&nbsp;
-                                <b>List of Revenue per month</b>
+                                <b>List of Outstanding Fees</b>
                                 &nbsp; | &nbsp;
-                                <a href="outstanding-fee.php?export=true" class="btn-get-main" style="text-decoration:none;color:white;">
+                                <a href="outstanding-fee.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main" style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>
                             </div>
                             &nbsp;
-                            <form action="outstanding-revenue.php" method="GET" class="form-inline">
+                            <form action="outstanding-fee.php" method="GET" class="form-inline">
                                 <div class="form-group">
                                     <div class="row">
                                         <div class="col-md-2">

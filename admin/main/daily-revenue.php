@@ -1,8 +1,8 @@
 <?php
+require_once '../../config/conn.php';
 require_once 'functions/sessions.php';
 require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
 
-include_once 'functions/fetch-daily-revenue.php';
 redirectToLogin();
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 // Default to current month's data if no filter is applied
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t'); // t gives last day of the month
+include_once 'functions/fetch-daily-revenue.php';
 
 // Fetch admin name
 $adminName = '';
@@ -77,14 +78,12 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     // Populate data rows for export (starting from row 7)
     $row = 7;
     foreach ($taxs as $tax) {
-        // Calculate the collected date based on startDate and day offset
-        $collectedDate = date('Y-m-d', strtotime($startDate . ' + ' . ($tax['day'] - 1) . ' days'));
 
         // Populate the cells
         $sheet->setCellValue('A' . $row, $tax['transactionNo']);
         $sheet->setCellValue('B' . $row, $tax['username']);
         $sheet->setCellValue('C' . $row, $tax['tax']);
-        $sheet->setCellValue('D' . $row, $collectedDate);
+        $sheet->setCellValue('D' . $row, $tax['collectedAt']);
 
         // Format the D column as a date
         $sheet->getStyle('D' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_YYYYMMDD);
@@ -175,7 +174,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Revenue per day</b>
                                 &nbsp; | &nbsp;
-                                <a href="daily-revenue.php?export=true" class="btn-get-main"
+                                <a href="daily-revenue.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main"
                                     style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>
@@ -214,10 +213,6 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 </thead>
                                 <tbody>
                                     <?php foreach ($taxs as $tax): ?>
-                                        <?php
-                                        // Calculate the actual date using the start date and the day offset
-                                        $collectedDate = date('Y-m-d', strtotime($startDate . ' + ' . ($tax['day'] - 1) . ' days'));
-                                        ?>
                                         <tr>
                                             <td>
                                                 <?php echo $tax['transactionNo']; ?>
@@ -228,9 +223,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                             <td>
                                                 <?php echo $tax['tax']; ?>
                                             </td>
-                                            <td>
-                                                <b><?php echo $collectedDate; ?></b>
-                                            </td>
+                                            <td><b><?php echo date('Y-m-d', strtotime($tax['collectedAt'])); ?></b></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>

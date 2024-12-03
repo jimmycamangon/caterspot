@@ -1,5 +1,5 @@
 <?php
-include_once 'functions/fetch-monthly-revenue.php';
+require_once '../../config/conn.php';
 require_once 'functions/sessions.php';
 require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
 
@@ -11,7 +11,7 @@ redirectToLogin();
 // Default to current month's data if no filter is applied
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t'); // t gives last day of the month
-
+include_once 'functions/fetch-monthly-revenue.php';
 // Fetch admin name
 $adminName = '';
 $sql = "SELECT username FROM tbl_admin WHERE admin_id = ?";
@@ -166,7 +166,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Revenue per month</b>
                                 &nbsp; | &nbsp;
-                                <a href="monthly-revenue.php?export=true" class="btn-get-main"
+                                <a href="monthly-revenue.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main"
                                     style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>

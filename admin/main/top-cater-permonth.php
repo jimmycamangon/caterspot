@@ -1,5 +1,4 @@
 <?php
-include_once 'functions/fetch-daily-revenue.php';
 require_once 'functions/sessions.php';
 require_once '../../config/conn.php'; // Include database connection
 require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
@@ -13,47 +12,7 @@ redirectToLogin();
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t'); // t gives last day of the month
 
-// Initialize results variable
-$topCaterers = [];
-
-try {
-    // Fetch and sanitize input parameters for date range filtering
-    $start_date = $startDate;
-    $end_date = $endDate;
-
-    // Base SQL query to get top-rated caterers by average rating
-    $sql = "SELECT c.username, AVG(f.rate) AS average_rating
-            FROM tbl_feedbacks f
-            INNER JOIN tbl_clients c ON f.client_id = c.client_id ";
-
-    // Add date range filtering to the query if start_date and end_date are provided
-    if ($start_date && $end_date) {
-        $sql .= "WHERE f.createdAt BETWEEN :start_date AND :end_date ";
-    }
-
-    $sql .= "GROUP BY c.client_id
-             ORDER BY average_rating DESC"; // Top 5 caterers by average rating
-
-    // Prepare the SQL statement
-    $stmt = $DB_con->prepare($sql);
-
-    // Bind parameters if date range filtering is applied
-    if ($start_date && $end_date) {
-        $stmt->bindParam(':start_date', $start_date);
-        $stmt->bindParam(':end_date', $end_date);
-    }
-
-    // Execute the query
-    $stmt->execute();
-
-    // Fetch the results into an associative array
-    $topCaterers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-} catch (PDOException $e) {
-    // Handle any errors that occur during the process
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
-}
+include_once 'functions/fetch-top-cater.php';
 
 // Check if there's data to export (if export query parameter is set)
 if (isset($_GET['export']) && $_GET['export'] == 'true') {
@@ -201,7 +160,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>Top Caterers by Average Rating</b>
                                 &nbsp; | &nbsp;
-                                <a href="top-cater-permonth.php?export=true" class="btn-get-main"
+                                <a href="top-cater-permonth.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main"
                                     style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>

@@ -1,5 +1,5 @@
 <?php
-include_once 'functions/fetch-daily-revenue.php';
+require_once '../../config/conn.php';
 require_once 'functions/sessions.php';
 
 redirectToLogin();
@@ -21,68 +21,7 @@ $client_id = $_SESSION['client_id'];
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t'); // t gives last day of the month
 
-// Initialize results variable
-$topPackages = [];
-
-try {
-    // Fetch and sanitize input parameters for date range filtering
-    $start_date = $startDate;
-    $end_date = $endDate;
-
-    // Base SQL query to get top-rated caterers by average rating
-    $sql = "SELECT 
-            C.username,
-            B.package_id,
-            D.firstname,
-            D.lastname,
-            A.package_name, 
-            A.package_image,
-           B.rate AS average_rate
-        FROM 
-            tbl_packages AS A
-        LEFT JOIN 
-            tbl_packagerating AS B 
-        ON 
-            A.package_id = B.package_id 
-        LEFT JOIN tbl_clients AS C ON A.client_id = C.client_id
-        LEFT JOIN tbl_users AS D ON B.customer_id = D.user_id
-            
-            ";
-
-    // Add date range filtering to the query if start_date and end_date are provided
-    if ($start_date && $end_date) {
-        $sql .= "WHERE 
-            B.customer_id <> '' 
-            AND B.client_id = :client_id
-            AND B.createdAt BETWEEN :start_date AND :end_date ";
-    }
-
-    $sql .= "GROUP BY 
-            A.package_name, A.package_image
-        ORDER BY 
-            average_rate DESC"; // Top 5 caterers by average rating
-
-    // Prepare the SQL statement
-    $stmt = $DB_con->prepare($sql);
-
-    // Bind parameters if date range filtering is applied
-    if ($start_date && $end_date) {
-        $stmt->bindParam(':client_id', $client_id);
-        $stmt->bindParam(':start_date', $start_date);
-        $stmt->bindParam(':end_date', $end_date);
-    }
-
-    // Execute the query
-    $stmt->execute();
-
-    // Fetch the results into an associative array
-    $topPackages = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-} catch (PDOException $e) {
-    // Handle any errors that occur during the process
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
-}
+include_once 'functions/fetch-top-package.php';
 
 
 // Fetch cater name and image
@@ -237,16 +176,16 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                     <br>
                     <ol class="breadcrumb mb-4">
                         <li class="breadcrumb-item"><a href="index.php" class="link-ref">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Daily Revenue</li>
+                        <li class="breadcrumb-item active">Top Package</li>
                     </ol>
 
                     <div class="card mb-4">
                         <div class="card-header">
                             <div class="form-group">
                                 <i class="fa-solid fa-cube"></i>&nbsp;
-                                <b>List of Revenue per day</b>
+                                <b>List of Top Packages</b>
                                 &nbsp; | &nbsp;
-                                <a href="top-package.php?export=true" class="btn-get-main" style="text-decoration:none;color:white;">
+                                <a href="top-package.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main" style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>
                             </div>

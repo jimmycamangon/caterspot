@@ -5,7 +5,7 @@ require_once '../../config/conn.php';
 // Check if the admin_id is set in the session
 if (isset($_SESSION['admin_id'])) {
     // Prepare the SQL statement
-    $sql = "SELECT * FROM tbl_applications";
+    $sql = "SELECT * FROM tbl_applications ORDER BY created_at DESC";
 
     try {
         // Prepare the SQL statement

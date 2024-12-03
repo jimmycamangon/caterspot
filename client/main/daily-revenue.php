@@ -1,8 +1,17 @@
 <?php
-include_once 'functions/fetch-daily-revenue.php';
+// Include the database connection file
+require_once '../../config/conn.php';
+
 require_once 'functions/sessions.php';
 redirectToLogin();
 require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
+
+// Pass filter parameters dynamically
+$startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
+$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');
+
+// Include fetch logic with parameters
+include_once 'functions/fetch-daily-revenue.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -83,23 +92,21 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     ];
     $sheet->getStyle('A10:D10')->applyFromArray($headerStyle);
 
-// Populate data rows
-$row = 11;
-foreach ($revenues as $revenue) {
-    // Calculate the collected date if needed
-    $collectedDate = date('Y-m-d', strtotime($startDate . ' + ' . ($revenue['day'] - 1) . ' days'));
+    // Populate data rows
+    $row = 11;
+    foreach ($revenues as $revenue) {
 
-    // Populate the cells
-    $sheet->setCellValue('A' . $row, $revenue['transactionNo']);
-    $sheet->setCellValue('B' . $row, $revenue['username']);
-    $sheet->setCellValue('C' . $row, $revenue['revenue']);
-    $sheet->setCellValue('D' . $row, $collectedDate);
+        // Populate the cells
+        $sheet->setCellValue('A' . $row, $revenue['transactionNo']);
+        $sheet->setCellValue('B' . $row, $revenue['username']);
+        $sheet->setCellValue('C' . $row, $revenue['revenue']);
+        $sheet->setCellValue('D' . $row, $revenue['collectedAt']);
 
-    // Format the D column as a date
-    $sheet->getStyle('D' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_YYYYMMDD);
+        // Format the D column as a date
+        $sheet->getStyle('D' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_YYYYMMDD);
 
-    $row++;
-}
+        $row++;
+    }
 
     // Add borders to data rows
     $lastRow = $row - 1;
@@ -175,10 +182,11 @@ foreach ($revenues as $revenue) {
                                 <b>List of Revenue per day</b>
                                 &nbsp; | &nbsp;
                                 <!-- Export Button Trigger -->
-                                <a href="daily-revenue.php?export=true" class="btn-get-main"
-                                    style="text-decoration:none;color:white;">
+                                <a href="daily-revenue.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>"
+                                    class="btn-get-main" style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>
+
                             </div>
                             &nbsp;
                             <form action="daily-revenue.php" method="GET">
@@ -215,15 +223,12 @@ foreach ($revenues as $revenue) {
                                 </thead>
                                 <tbody>
                                     <?php foreach ($revenues as $revenue): ?>
-                                        <?php
-                                        // Calculate the actual date using the start date and the day offset
-                                        $collectedDate = date('Y-m-d', strtotime($startDate . ' + ' . ($revenue['day'] - 1) . ' days'));
-                                        ?>
                                         <tr>
                                             <td><?php echo $revenue['transactionNo']; ?></td>
                                             <td><?php echo $revenue['username']; ?></td>
                                             <td><?php echo $revenue['revenue']; ?></td>
-                                            <td><b><?php echo $collectedDate; ?></b></td>
+                                            <td><?php echo date('Y-m-d', strtotime($revenue['collectedAt'])); ?></td>
+
                                             <!-- Display the calculated date -->
                                         </tr>
                                     <?php endforeach; ?>

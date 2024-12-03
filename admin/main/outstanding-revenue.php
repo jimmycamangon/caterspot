@@ -1,5 +1,5 @@
 <?php
-include_once 'functions/fetch-monthly-revenue-outstanding.php';
+require_once '../../config/conn.php';
 require_once 'functions/sessions.php';
 require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
 
@@ -11,6 +11,7 @@ redirectToLogin();
 // Initialize variables for date filtering
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : '';
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
+include_once 'functions/fetch-monthly-revenue-outstanding.php';
 
 // Check if there's data to export (if export query parameter is set)
 if (isset($_GET['export']) && $_GET['export'] == 'true') {
@@ -172,7 +173,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Revenue per month</b>
                                 &nbsp; | &nbsp;
-                                <a href="outstanding-revenue.php?export=true" class="btn-get-main"
+                                <a href="outstanding-revenue.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main"
                                     style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>
