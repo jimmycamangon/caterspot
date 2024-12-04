@@ -1,15 +1,149 @@
 <?php
-include_once 'functions/fetch-sales-details.php';
+require_once '../../config/conn.php';
+// Include necessary files and libraries
 require_once 'functions/sessions.php';
-
 redirectToLogin();
+require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 // Default to current month's data if no filter is applied
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
-$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t'); // t gives last day of the month
+$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');
 
+include_once 'functions/fetch-sales-details.php';
+// Fetch client information
+$client_id = $_SESSION['client_id'];
+$sql = "SELECT username, client_image FROM tbl_clients WHERE client_id = ?";
+$stmt = $DB_con->prepare($sql);
+$stmt->execute([$client_id]);
+$cater = $stmt->fetch();
+$caterName = $cater['username'];
+$clientImagePath = '../../assets/img/client-images/' . $cater['client_image'];
+$extractedDate = date('Y-m-d'); // Current date
 
+// Check if there's data to export
+if (isset($_GET['export']) && $_GET['export'] == 'true') {
+    if (empty($completed_orders)) {
+        echo "<script>alert('No data available to export.'); window.history.back();</script>";
+        exit();
+    }
+
+    // Create a new Spreadsheet object
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    if (!empty($clientImagePath) && file_exists($clientImagePath)) {
+        // Add client logo
+        $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+        $drawing->setName('Logo');
+        $drawing->setDescription('Client Logo');
+        $drawing->setPath($clientImagePath);
+        $drawing->setHeight(120); // Increased the height for a larger image
+        $drawing->setCoordinates('D3'); // Adjusted the position to row 3
+        $drawing->setOffsetX(10); // Optional: Adjust horizontal offset if needed
+        $drawing->setOffsetY(10); // Optional: Adjust vertical offset if needed
+        $drawing->setWorksheet($sheet);
+    } else {
+        $sheet->setCellValue('A1', 'No Image Available');
+    }
+    
+    // Add cater name and extracted date
+    $sheet->setCellValue('A3', 'Cater Name: ' . $caterName);
+    $sheet->setCellValue('A4', 'Extracted Date: ' . $extractedDate);
+
+    // Style cater name and extracted date
+    $sheet->getStyle('A3:A4')->applyFromArray([
+        'font' => [
+            'bold' => true,
+            'size' => 14, // Increased font size
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ],
+    ]);
+
+    // Table headers
+    $sheet->setCellValue('A10', 'Transaction No.');
+    $sheet->setCellValue('B10', 'Customer');
+    $sheet->setCellValue('C10', 'Grand Total');
+    $sheet->setCellValue('D10', 'Tax (Admin\'s Share)');
+    $sheet->setCellValue('E10', 'My Revenue');
+    $sheet->setCellValue('F10', 'Collected at');
+
+    // Style table headers
+    $headerStyle = [
+        'font' => [
+            'bold' => true,
+            'size' => 12,
+            'color' => ['rgb' => 'FFFFFF'],
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => '142d4c'],
+        ],
+    ];
+    $sheet->getStyle('A10:F10')->applyFromArray($headerStyle);
+
+    // Populate data rows
+    $row = 11;
+    foreach ($completed_orders as $order) {
+        // Calculate values
+        $total_price = $order['total_price'];
+        $tax = $order['tax'];
+        $grand_total = $total_price + $tax;
+        $client_revenue = $total_price;
+
+        // Populate the cells
+        $sheet->setCellValue('A' . $row, $order['transactionNo']);
+        $sheet->setCellValue('B' . $row, $order['full_name']);
+        $sheet->setCellValue('C' . $row, $grand_total);
+        $sheet->setCellValue('D' . $row, $tax);
+        $sheet->setCellValue('E' . $row, $client_revenue);
+        $sheet->setCellValue('F' . $row, $order['created_at']);
+
+        // Format the F column as a date
+        $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_YYYYMMDD);
+
+        $row++;
+    }
+
+    // Add borders to data rows
+    $lastRow = $row - 1;
+    $sheet->getStyle('A11:F' . $lastRow)->applyFromArray([
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+    ]);
+
+    // Set column widths
+    $sheet->getColumnDimension('A')->setAutoSize(true);
+    $sheet->getColumnDimension('B')->setAutoSize(true);
+    $sheet->getColumnDimension('C')->setAutoSize(true);
+    $sheet->getColumnDimension('D')->setAutoSize(true);
+    $sheet->getColumnDimension('E')->setAutoSize(true);
+    $sheet->getColumnDimension('F')->setAutoSize(true);
+
+    // Write file and download
+    $writer = new Xlsx($spreadsheet);
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="sales_details_report_' . date('Y-m-d') . '.xlsx"');
+    header('Cache-Control: max-age=0');
+    $writer->save('php://output');
+    exit();
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -66,9 +200,10 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t'); // t gi
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Revenue per day</b>
                                 &nbsp; | &nbsp;
-                                <button type="button" class="btn-get-main" id="exportButton">
+                                <a href="sales-details.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>"
+                                    class="btn-get-main" style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
-                                </button>
+                                </a>
                             </div>
                             &nbsp;
                             <form action="sales-details.php" method="GET">
@@ -191,26 +326,6 @@ $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t'); // t gi
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <!-- Include jQuery library -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
-    <!-- Export to excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
-
-    <script>
-        document.getElementById('exportButton').addEventListener('click', function () {
-            // Get table data
-            var table = document.getElementById('datatablesSimple');
-            var sheet = XLSX.utils.table_to_sheet(table);
-
-            // Convert sheet to Excel file
-            var workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, sheet, 'Revenue Report');
-
-            // Save the Excel file
-            var today = new Date().toISOString().slice(0, 10); // Get today's date
-            var filename = 'revenue_report_' + today + '.xlsx';
-            XLSX.writeFile(workbook, filename);
-        });
-    </script>
 
 
     <script src="../vendor/js/datatables-simple-demo.js"></script>

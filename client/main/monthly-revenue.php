@@ -44,12 +44,15 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
         $drawing->setName('Logo');
         $drawing->setDescription('Client Logo');
         $drawing->setPath($clientImagePath);
-        $drawing->setHeight(80);
-        $drawing->setCoordinates('D1');
+        $drawing->setHeight(120); // Increased the height for a larger image
+        $drawing->setCoordinates('D3'); // Adjusted the position to row 3
+        $drawing->setOffsetX(10); // Optional: Adjust horizontal offset if needed
+        $drawing->setOffsetY(10); // Optional: Adjust vertical offset if needed
         $drawing->setWorksheet($sheet);
     } else {
         $sheet->setCellValue('A1', 'No Image Available');
     }
+
 
     // Add cater name and extracted date
     $sheet->setCellValue('A3', 'Cater Name: ' . $caterName);
