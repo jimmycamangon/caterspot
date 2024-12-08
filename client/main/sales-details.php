@@ -9,6 +9,10 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
+$totalGrandTotal = 0;
+$totalAdminShare = 0;
+$totalMyRevenue = 0;
+
 // Default to current month's data if no filter is applied
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');
@@ -49,7 +53,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     } else {
         $sheet->setCellValue('A1', 'No Image Available');
     }
-    
+
     // Add cater name and extracted date
     $sheet->setCellValue('A3', 'Cater Name: ' . $caterName);
     $sheet->setCellValue('A4', 'Extracted Date: ' . $extractedDate);
@@ -70,7 +74,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     $sheet->setCellValue('A10', 'Transaction No.');
     $sheet->setCellValue('B10', 'Customer');
     $sheet->setCellValue('C10', 'Grand Total');
-    $sheet->setCellValue('D10', 'Tax (Admin\'s Share)');
+    $sheet->setCellValue('D10', '(Admin\'s Share)');
     $sheet->setCellValue('E10', 'My Revenue');
     $sheet->setCellValue('F10', 'Collected at');
 
@@ -95,11 +99,14 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     // Populate data rows
     $row = 11;
     foreach ($completed_orders as $order) {
-        // Calculate values
         $total_price = $order['total_price'];
         $tax = $order['tax'];
         $grand_total = $total_price + $tax;
         $client_revenue = $total_price;
+
+        $totalGrandTotal += $grand_total;
+        $totalAdminShare += $tax;
+        $totalMyRevenue += $client_revenue;
 
         // Populate the cells
         $sheet->setCellValue('A' . $row, $order['transactionNo']);
@@ -114,6 +121,41 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
 
         $row++;
     }
+    // Add totals row
+    $sheet->setCellValue('A' . $row, 'Total:');
+    $sheet->setCellValue('C' . $row, $totalGrandTotal);
+    $sheet->setCellValue('D' . $row, $totalAdminShare);
+    $sheet->setCellValue('E' . $row, $totalMyRevenue);
+
+    // Style the totals row with borders and yellow background color
+    $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray([
+        'font' => [
+            'bold' => true,
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+        ],
+        'borders' => [
+            'top' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            ],
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => 'FFFF00'], // Yellow background color
+        ],
+    ]);
+
+
+    $spreadsheet->getActiveSheet()
+        ->getStyle('A1')
+        ->getNumberFormat()
+        ->setFormatCode('#,##0.00'); // Custom format for currency
+
 
     // Add borders to data rows
     $lastRow = $row - 1;
@@ -191,14 +233,14 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                     <br>
                     <ol class="breadcrumb mb-4">
                         <li class="breadcrumb-item"><a href="index.php" class="link-ref">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Daily Revenue</li>
+                        <li class="breadcrumb-item active">Actual Sales</li>
                     </ol>
 
                     <div class="card mb-4">
                         <div class="card-header">
                             <div class="form-group">
                                 <i class="fa-solid fa-cube"></i>&nbsp;
-                                <b>List of Revenue per day</b>
+                                <b>List of Actual Sales</b>
                                 &nbsp; | &nbsp;
                                 <a href="sales-details.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>"
                                     class="btn-get-main" style="text-decoration:none;color:white;">
@@ -236,7 +278,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                         <th>Transaction No.</th>
                                         <th>Customer</th>
                                         <th>Grand Total</th>
-                                        <th>Tax (Admin's Share)</th>
+                                        <th>Admin's Share</th>
                                         <th>My Revenue</th>
                                         <th>Collected at</th>
                                     </tr>

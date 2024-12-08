@@ -94,21 +94,54 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     ];
     $sheet->getStyle('A10:D10')->applyFromArray($headerStyle);
 
-    // Populate data rows
-    $row = 11;
+    $row = 11; // Starting row for data
+    $totalRevenue = 0; // Initialize total revenue
     foreach ($revenues as $revenue) {
-
+    
         // Populate the cells
         $sheet->setCellValue('A' . $row, $revenue['transactionNo']);
         $sheet->setCellValue('B' . $row, $revenue['username']);
         $sheet->setCellValue('C' . $row, $revenue['revenue']);
         $sheet->setCellValue('D' . $row, $revenue['collectedAt']);
-
+    
         // Format the D column as a date
         $sheet->getStyle('D' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_YYYYMMDD);
-
+    
+        // Add to total revenue
+        $totalRevenue += $revenue['revenue'];
+    
         $row++;
     }
+    
+    // Add a total row
+    $sheet->setCellValue('B' . $row, 'Total Revenue:'); // Label
+    $sheet->setCellValue('C' . $row, $totalRevenue);   // Total revenue
+    
+    // Style the total row
+    $totalRowStyle = [
+        'font' => [
+            'bold' => true,
+            'color' => ['rgb' => '000000'],
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => 'FFFF00'], // Yellow background color
+        ],
+    ];
+    $sheet->getStyle('A' . $row . ':D' . $row)->applyFromArray($totalRowStyle);
+    
+    // Optional: Add borders to the total row
+    $sheet->getStyle('A' . $row . ':D' . $row)->applyFromArray([
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+    ]);
 
     // Add borders to data rows
     $lastRow = $row - 1;

@@ -44,15 +44,16 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
 
-    // Add client logo if available
     if (!empty($clientImagePath) && file_exists($clientImagePath)) {
         // Add client logo
         $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
         $drawing->setName('Logo');
         $drawing->setDescription('Client Logo');
         $drawing->setPath($clientImagePath);
-        $drawing->setHeight(80);
-        $drawing->setCoordinates('D1');
+        $drawing->setHeight(120); // Increased the height for a larger image
+        $drawing->setCoordinates('D3'); // Adjusted the position to row 3
+        $drawing->setOffsetX(10); // Optional: Adjust horizontal offset if needed
+        $drawing->setOffsetY(10); // Optional: Adjust vertical offset if needed
         $drawing->setWorksheet($sheet);
     } else {
         $sheet->setCellValue('A1', 'No Image Available');
@@ -98,19 +99,48 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
 
     // Populate data rows for export
     $row = 11;
+    $totalrate = 0;
     foreach ($topPackages as $package) {
         $sheet->setCellValue('A' . $row, $package['package_name']);
         $sheet->setCellValue('B' . $row, $package['average_rate']);
+
+        $totalrate += $package['average_rate'];
         $row++;
     }
 
+    $sheet->setCellValue('A' . $row, 'Total:'); // Label for total
+    $sheet->setCellValue('B' . $row, $totalrate); // Total Platform Fee
     // Add borders to data rows
     $lastRow = $row - 1;
+
+    $sheet->getStyle('A' . $row . ':B' . $row)->applyFromArray([
+        'font' => [
+            'bold' => true,
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+        ],
+        'borders' => [
+            'allBorders' => [ // Adds borders for all sides
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => 'FFFF00'], // Yellow background color
+        ],
+    ]);
+    
     $sheet->getStyle('A11:B' . $lastRow)->applyFromArray([
         'borders' => [
             'allBorders' => [
                 'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                 'color' => ['rgb' => '000000'],
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'FFFF00'], // Yellow background color
             ],
         ],
     ]);
@@ -185,7 +215,8 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Top Packages</b>
                                 &nbsp; | &nbsp;
-                                <a href="top-package.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main" style="text-decoration:none;color:white;">
+                                <a href="top-package.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>"
+                                    class="btn-get-main" style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>
                             </div>

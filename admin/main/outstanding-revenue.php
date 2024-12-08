@@ -76,6 +76,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
 
     // Populate data rows for export
     $row = 7;
+    $totalTax = 0;
     foreach ($outstandings as $outstanding) {
         // Check if the status is empty or null, and set to 'Not Paid' if so
         $status = empty($outstanding['status']) ? 'Not Paid' : $outstanding['status'];
@@ -85,8 +86,36 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
         $sheet->setCellValue('C' . $row, $outstanding['tax']);
         $sheet->setCellValue('D' . $row, $status); // Use the adjusted status
         $sheet->setCellValue('E' . $row, $outstanding['month']);
+
+        $totalTax += $outstanding['tax'];
         $row++;
     }
+
+    // Add total row
+    $sheet->setCellValue('B' . $row, 'Total:'); // Label for total
+    $sheet->setCellValue('C' . $row, $totalTax); // Total Platform Fee
+
+    $sheet->getStyle('A' . $row . ':E' . $row)->applyFromArray([
+        'font' => [
+            'bold' => true,
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => 'FFFF00'], // Yellow background
+        ],
+        'borders' => [
+            'allBorders' => [ // Apply borders to all sides
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'], // Black color
+            ],
+        ],
+    ]);
+    
+    
+
 
     // Add borders to data rows
     $lastRow = $row - 1;
@@ -173,8 +202,8 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Revenue per month</b>
                                 &nbsp; | &nbsp;
-                                <a href="outstanding-revenue.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main"
-                                    style="text-decoration:none;color:white;">
+                                <a href="outstanding-revenue.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>"
+                                    class="btn-get-main" style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>
                             </div>

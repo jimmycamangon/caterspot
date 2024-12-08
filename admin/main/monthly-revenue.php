@@ -74,14 +74,43 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
 
     // Populate data rows for export (starting from row 7)
     $row = 7;
+    $totalRevenue = 0;
+    $totalPlatformFee = 0;
     foreach ($taxs as $tax) {
         $sheet->setCellValue('A' . $row, $tax['username']);
         $sheet->setCellValue('B' . $row, $tax['client_revenue']);
         $sheet->setCellValue('C' . $row, $tax['total_tax']);
         $sheet->setCellValue('D' . $row, $tax['month']);
+
+        $totalRevenue += $tax['client_revenue'];
+        $totalPlatformFee += $tax['total_tax'];
         $row++;
     }
 
+    $sheet->setCellValue('A' . $row, 'Total');
+    $sheet->setCellValue('B' . $row, $totalRevenue);
+    $sheet->setCellValue('C' . $row, $totalPlatformFee);
+
+    
+    $sheet->getStyle('A' . $row . ':D' . $row)->applyFromArray([
+        'font' => [
+            'bold' => true,
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+        ],
+        'borders' => [
+            'allBorders' => [ // Adds borders for all sides
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => 'FFFF00'], // Yellow background color
+        ],
+    ]);
+    
     // Add borders to data rows
     $lastRow = $row - 1;
     $sheet->getStyle('A7:D' . $lastRow)->applyFromArray([

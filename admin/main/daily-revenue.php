@@ -77,6 +77,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     $sheet->getStyle('A6:D6')->applyFromArray($headerStyle);
     // Populate data rows for export (starting from row 7)
     $row = 7;
+    $totalRevenue = 0;
     foreach ($taxs as $tax) {
 
         // Populate the cells
@@ -85,14 +86,41 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
         $sheet->setCellValue('C' . $row, $tax['tax']);
         $sheet->setCellValue('D' . $row, $tax['collectedAt']);
 
+        $totalRevenue += $tax['tax'];
         // Format the D column as a date
         $sheet->getStyle('D' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_YYYYMMDD);
 
         $row++;
     }
-
+    $sheet->setCellValue('A' . $row, 'Total:');
+    $sheet->setCellValue('C' . $row, $totalRevenue);
     // Add borders to data rows
     $lastRow = $row - 1;
+
+    // Style the totals row with borders and yellow background color
+    $sheet->getStyle('A' . $row . ':D' . $row)->applyFromArray([
+        'font' => [
+            'bold' => true,
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+        ],
+        'borders' => [
+            'top' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            ],
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => 'FFFF00'], // Yellow background color
+        ],
+    ]);
+
+
     $sheet->getStyle('A7:D' . $lastRow)->applyFromArray([
         'borders' => [
             'allBorders' => [

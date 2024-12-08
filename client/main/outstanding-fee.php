@@ -44,8 +44,10 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
         $drawing->setName('Logo');
         $drawing->setDescription('Client Logo');
         $drawing->setPath($clientImagePath);
-        $drawing->setHeight(80);
-        $drawing->setCoordinates('D1');
+        $drawing->setHeight(120); // Increased the height for a larger image
+        $drawing->setCoordinates('D3'); // Adjusted the position to row 3
+        $drawing->setOffsetX(10); // Optional: Adjust horizontal offset if needed
+        $drawing->setOffsetY(10); // Optional: Adjust vertical offset if needed
         $drawing->setWorksheet($sheet);
     } else {
         $sheet->setCellValue('A1', 'No Image Available');
@@ -94,14 +96,50 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
 
     // Populate data rows
     $row = 11;
+    $totalPlatformFee = 0;
     foreach ($outstandings as $outstanding) {
         $sheet->setCellValue('A' . $row, $outstanding['transactionNo']);
         $sheet->setCellValue('B' . $row, $outstanding['username']);
         $sheet->setCellValue('C' . $row, $outstanding['tax']);
         $sheet->setCellValue('D' . $row, $outstanding['status'] == 'Not Paid' || $outstanding['status'] == '' ? 'Not Paid' : 'Paid');
         $sheet->setCellValue('E' . $row, $outstanding['month']);
+
+        $totalPlatformFee += $outstanding['tax'];
         $row++;
     }
+    // Add total row
+    $sheet->setCellValue('B' . $row, 'Total:'); // Label for total
+    $sheet->setCellValue('C' . $row, $totalPlatformFee); // Total Platform Fee
+
+    // Style the total row
+    $sheet->getStyle('A' . $row . ':E' . $row)->applyFromArray([
+        'font' => [
+            'bold' => true,
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => 'FFFF00'], // Yellow background color
+        ],
+        'borders' => [
+            'top' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+    ]);
+
+    // Optional: Add borders to the total row
+    $sheet->getStyle('A' . $row . ':E' . $row)->applyFromArray([
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+    ]);
 
     // Add borders to data rows
     $lastRow = $row - 1;
@@ -188,7 +226,8 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Outstanding Fees</b>
                                 &nbsp; | &nbsp;
-                                <a href="outstanding-fee.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main" style="text-decoration:none;color:white;">
+                                <a href="outstanding-fee.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>"
+                                    class="btn-get-main" style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>
                             </div>

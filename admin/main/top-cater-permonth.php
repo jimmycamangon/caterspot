@@ -52,7 +52,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
 
     // Table headers for export
     $sheet->setCellValue('A6', 'Caterer');
-    $sheet->setCellValue('B6', 'Average Rating');
+    $sheet->setCellValue('B6', 'Performance Rating');
 
     // Style table headers
     $headerStyle = [
@@ -73,13 +73,37 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     $sheet->getStyle('A6:B6')->applyFromArray($headerStyle);
 
     // Populate data rows for export
+    $totalrate = 0;
     $row = 7;
     foreach ($topCaterers as $caterer) {
         $sheet->setCellValue('A' . $row, $caterer['username']);
         $sheet->setCellValue('B' . $row, number_format($caterer['average_rating'], 2));
+
+        $totalrate += is_numeric($caterer['average_rating']) ? $caterer['average_rating'] : 0;
+
         $row++;
     }
+    $sheet->setCellValue('A' . $row, 'Total:'); // Label for total
+    $sheet->setCellValue('B' . $row, $totalrate); // Total Platform Fee
 
+    $sheet->getStyle('A' . $row . ':B' . $row)->applyFromArray([
+        'font' => [
+            'bold' => true,
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+        ],
+        'borders' => [
+            'allBorders' => [ // Adds borders for all sides
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => 'FFFF00'], // Yellow background color
+        ],
+    ]);
     // Add borders to data rows
     $lastRow = $row - 1;
     $sheet->getStyle('A7:B' . $lastRow)->applyFromArray([
@@ -158,7 +182,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                         <div class="card-header">
                             <div class="form-group">
                                 <i class="fa-solid fa-cube"></i>&nbsp;
-                                <b>Top Caterers by Average Rating</b>
+                                <b>Top Caterers by Performance Rating</b>
                                 &nbsp; | &nbsp;
                                 <a href="top-cater-permonth.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main"
                                     style="text-decoration:none;color:white;">
@@ -192,7 +216,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 <thead>
                                     <tr>
                                         <th>Caterer</th>
-                                        <th>Average Rating</th>
+                                        <th>Performance Rating</th>
                                     </tr>
                                 </thead>
                                 <tbody>

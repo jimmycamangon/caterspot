@@ -94,15 +94,45 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     ];
     $sheet->getStyle('A10:D10')->applyFromArray($headerStyle);
 
-    // Populate data rows
+    // Populate data rows and calculate totals
+    $totalRevenue = 0;
+    $totalPlatformFee = 0;
     $row = 11;
     foreach ($revenues as $revenue) {
         $sheet->setCellValue('A' . $row, $revenue['username']);
         $sheet->setCellValue('B' . $row, $revenue['total_revenue']);
         $sheet->setCellValue('C' . $row, $revenue['total_tax']);
         $sheet->setCellValue('D' . $row, $revenue['month']);
+
+        $totalRevenue += $revenue['total_revenue'];
+        $totalPlatformFee += $revenue['total_tax'];
         $row++;
     }
+
+    // Add totals row
+    $sheet->setCellValue('A' . $row, 'Total');
+    $sheet->setCellValue('B' . $row, $totalRevenue);
+    $sheet->setCellValue('C' . $row, $totalPlatformFee);
+
+    $sheet->getStyle('A' . $row . ':D' . $row)->applyFromArray([
+        'font' => [
+            'bold' => true,
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+        ],
+        'borders' => [
+            'allBorders' => [ // Adds borders for all sides
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['rgb' => '000000'],
+            ],
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => 'FFFF00'], // Yellow background color
+        ],
+    ]);
+    
 
     // Add borders to data rows
     $lastRow = $row - 1;
@@ -187,7 +217,8 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 <i class="fa-solid fa-cube"></i>&nbsp;
                                 <b>List of Revenue per month</b>
                                 &nbsp; | &nbsp;
-                                <a href="monthly-revenue.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main" style="text-decoration:none;color:white;">
+                                <a href="monthly-revenue.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>"
+                                    class="btn-get-main" style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>
                             </div>
