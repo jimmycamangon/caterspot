@@ -1,17 +1,24 @@
 <?php
 require_once '../../config/conn.php';
+// Include necessary files and libraries
 require_once 'functions/sessions.php';
+redirectToLogin();
 require '../../assets/vendor/phpspreadsheet/vendor/autoload.php'; // Load PhpSpreadsheet library
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-redirectToLogin();
+$totalGrandTotal = 0;
+$totalIncome = 0;
+$totalClientRevenue = 0;
 
 // Default to current month's data if no filter is applied
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
-$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t'); // t gives last day of the month
-include_once 'functions/fetch-monthly-revenue.php';
+$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');
+
+include_once 'functions/fetch-income-details.php';
+
 // Fetch admin name
 $adminName = '';
 $sql = "SELECT username FROM tbl_admin WHERE admin_id = ?";
@@ -20,9 +27,9 @@ $stmt->execute([$_SESSION['admin_id']]);
 $admin = $stmt->fetch();
 $adminName = $admin['username'];
 
-// Check if there's data to export (if export query parameter is set)
+// Check if there's data to export
 if (isset($_GET['export']) && $_GET['export'] == 'true') {
-    if (empty($taxs)) {
+    if (empty($completed_orders)) {
         echo "<script>alert('No data available to export.'); window.history.back();</script>";
         exit();
     }
@@ -31,13 +38,13 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
 
-    // Add admin name and exported date to the spreadsheet
-    $sheet->setCellValue('A2', 'Monthly Revenue');
-    $sheet->setCellValue('A3', 'Name: ' . $adminName);
+    // Add cater name and extracted date
+    $sheet->setCellValue('A3', 'Caterspot Income');
     $sheet->setCellValue('A4', 'Exported Date: ' . date('Y-m-d'));
 
-    // Style admin name and date
-    $sheet->getStyle('A2:A4')->applyFromArray([
+
+    // Style cater name and extracted date
+    $sheet->getStyle('A3:A4')->applyFromArray([
         'font' => [
             'bold' => true,
             'size' => 14, // Increased font size
@@ -48,11 +55,13 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
         ],
     ]);
 
-    // Table headers for export (now starting at row 6 instead of 10)
-    $sheet->setCellValue('A6', 'Cater');
-    $sheet->setCellValue('B6', 'Revenue');
-    $sheet->setCellValue('C6', 'Platform Fee');
-    $sheet->setCellValue('D6', 'Collection Date');
+    // Table headers
+    $sheet->setCellValue('A6', 'Transaction No.');
+    $sheet->setCellValue('B6', 'Customer');
+    $sheet->setCellValue('C6', 'Grand Total');
+    $sheet->setCellValue('D6', 'Income');
+    $sheet->setCellValue('E6', 'Cater Income');
+    $sheet->setCellValue('F6', 'Collected at');
 
     // Style table headers
     $headerStyle = [
@@ -70,29 +79,41 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
             'startColor' => ['rgb' => '142d4c'],
         ],
     ];
-    $sheet->getStyle('A6:D6')->applyFromArray($headerStyle);
+    $sheet->getStyle('A6:F6')->applyFromArray($headerStyle);
 
-    // Populate data rows for export (starting from row 7)
+    // Populate data rows
     $row = 7;
-    $totalRevenue = 0;
-    $totalPlatformFee = 0;
-    foreach ($taxs as $tax) {
-        $sheet->setCellValue('A' . $row, $tax['username']);
-        $sheet->setCellValue('B' . $row, $tax['client_revenue']);
-        $sheet->setCellValue('C' . $row, $tax['total_tax']);
-        $sheet->setCellValue('D' . $row, $tax['month']);
+    foreach ($completed_orders as $order) {
+        $total_price = $order['total_price'];
+        $tax = $order['tax'];
+        $grand_total = $total_price + $tax;
+        $client_revenue = $total_price;
 
-        $totalRevenue += $tax['client_revenue'];
-        $totalPlatformFee += $tax['total_tax'];
+        $totalGrandTotal += $grand_total;
+        $totalIncome += $tax;
+        $totalClientRevenue += $client_revenue;
+
+        // Populate the cells
+        $sheet->setCellValue('A' . $row, $order['transactionNo']);
+        $sheet->setCellValue('B' . $row, $order['full_name']);
+        $sheet->setCellValue('C' . $row, $grand_total);
+        $sheet->setCellValue('D' . $row, $tax);
+        $sheet->setCellValue('E' . $row, $client_revenue);
+        $sheet->setCellValue('F' . $row, $order['created_at']);
+
+        // Format the F column as a date
+        $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_YYYYMMDD);
+
         $row++;
     }
-
+    // Add totals row
     $sheet->setCellValue('A' . $row, 'Total:');
-    $sheet->setCellValue('B' . $row, $totalRevenue);
-    $sheet->setCellValue('C' . $row, $totalPlatformFee);
+    $sheet->setCellValue('C' . $row, $totalGrandTotal);
+    $sheet->setCellValue('D' . $row, $totalIncome);
+    $sheet->setCellValue('E' . $row, $totalClientRevenue);
 
-    
-    $sheet->getStyle('A' . $row . ':D' . $row)->applyFromArray([
+    // Style the totals row with borders and yellow background color
+    $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray([
         'font' => [
             'bold' => true,
         ],
@@ -100,7 +121,10 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
             'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
         ],
         'borders' => [
-            'allBorders' => [ // Adds borders for all sides
+            'top' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            ],
+            'allBorders' => [
                 'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                 'color' => ['rgb' => '000000'],
             ],
@@ -111,9 +135,16 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
         ],
     ]);
 
+
+    $spreadsheet->getActiveSheet()
+        ->getStyle('A1')
+        ->getNumberFormat()
+        ->setFormatCode('#,##0.00'); // Custom format for currency
+
+
     // Add borders to data rows
     $lastRow = $row - 1;
-    $sheet->getStyle('A7:D' . $lastRow)->applyFromArray([
+    $sheet->getStyle('A7:F' . $lastRow)->applyFromArray([
         'borders' => [
             'allBorders' => [
                 'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -127,13 +158,16 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     $sheet->getColumnDimension('B')->setAutoSize(true);
     $sheet->getColumnDimension('C')->setAutoSize(true);
     $sheet->getColumnDimension('D')->setAutoSize(true);
+    $sheet->getColumnDimension('E')->setAutoSize(true);
+    $sheet->getColumnDimension('F')->setAutoSize(true);
 
     // Write file and download
     $writer = new Xlsx($spreadsheet);
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="monthly_revenue_report_' . date('Y-m-d') . '.xlsx"');
+    header('Content-Disposition: attachment;filename="income_details_report_' . date('Y-m-d') . '.xlsx"');
     header('Cache-Control: max-age=0');
     $writer->save('php://output');
+    
     exit();
 }
 ?>
@@ -175,7 +209,6 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
 
 </head>
 
-
 <body class="sb-nav-fixed">
     <?php require_once 'includes/top-nav.php'; ?>
     <div id="layoutSidenav">
@@ -186,34 +219,33 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                     <br>
                     <ol class="breadcrumb mb-4">
                         <li class="breadcrumb-item"><a href="index.php" class="link-ref">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Monthly Revenue</li>
+                        <li class="breadcrumb-item active">Actual Income</li>
                     </ol>
 
                     <div class="card mb-4">
                         <div class="card-header">
                             <div class="form-group">
                                 <i class="fa-solid fa-cube"></i>&nbsp;
-                                <b>List of Revenue per month</b>
+                                <b>List of Actual Income</b>
                                 &nbsp; | &nbsp;
-                                <a href="monthly-revenue.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>" class="btn-get-main"
-                                    style="text-decoration:none;color:white;">
+                                <a href="income-details.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>"
+                                    class="btn-get-main" style="text-decoration:none;color:white;">
                                     <i class="fa-solid fa-paperclip"></i> Generate Report
                                 </a>
                             </div>
                             &nbsp;
-                            <form action="monthly-revenue.php" method="GET" class="form-inline">
+                            <form action="income-details.php" method="GET">
                                 <div class="form-group">
                                     <div class="row">
                                         <div class="col-md-2">
                                             <label for="start_date">Start Date:</label>
-                                            <input type="date" id="start_date" name="start_date"
-                                                class="form-control mx-2" required>
+                                            <input type="date" id="start_date" name="start_date" class="form-control"
+                                                required>
                                         </div>
                                         <div class="col-md-2">
                                             <label for="end_date">End Date:</label>
-                                            <input type="date" id="end_date" name="end_date" class="form-control mx-2"
+                                            <input type="date" id="end_date" name="end_date" class="form-control"
                                                 required>
-
                                         </div>
                                         <div class="col-md-4 align-self-end">
                                             <button class="btn-get-main" type="submit"><i
@@ -222,44 +254,96 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                     </div>
                                 </div>
                             </form>
+
                         </div>
+                        <hr>
                         <div class="card-body">
                             <table id="datatablesSimple" class="table">
                                 <thead>
                                     <tr>
-                                        <th>Cater</th>
-                                        <th>Revenue</th>
-                                        <th>Platform Fee</th>
-                                        <th>Collection Date</th>
-
+                                        <th>Transaction No.</th>
+                                        <th>Customer</th>
+                                        <th>Cater Name</th>
+                                        <th>Grand Total</th>
+                                        <th>Income</th>
+                                        <th>Cater Income</th>
+                                        <th>Collected at</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($taxs as $tax): ?>
+                                    <?php foreach ($completed_orders as $order): ?>
+                                        <?php
+                                        // Extracting the values from the current order
+                                        $total_price = $order['total_price'];  // Amount that the caterer will receive
+                                        $tax = $order['tax'];                  // Tax amount (admin's share)
+                                    
+                                        // Calculate grand total
+                                        $grand_total = $total_price + $tax;   // Total amount paid by the customer
+                                    
+                                        // Calculate the client's revenue (which is the total price minus the tax)
+                                        $client_revenue = $total_price;       // Client's revenue (total price only, excluding tax)
+                                        ?>
                                         <tr>
                                             <td>
-                                                <?php echo $tax['username']; ?>
+                                                <?php echo $order['transactionNo']; ?>
                                             </td>
                                             <td>
-                                                <?php echo $tax['client_revenue']; ?>
+                                                <?php echo $order['full_name']; ?>
                                             </td>
                                             <td>
-                                                <?php echo $tax['total_tax']; ?>
+                                                <?php echo $order['cater_name']; ?>
                                             </td>
                                             <td>
-                                                <?php echo $tax['month']; ?>
+                                                ₱<?php echo number_format($grand_total, 2); ?>
+                                                <!-- Grand Total (customer's total payment) -->
+                                            </td>
+                                            <td>
+                                                ₱<?php echo number_format($tax, 2); ?> <!-- Tax (admin's share) -->
+                                            </td>
+                                            <td>
+                                                ₱<?php echo number_format($client_revenue, 2); ?>
+                                                <!-- Client's Revenue (caterer's actual revenue) -->
+                                            </td>
+                                            <td>
+                                                <?php echo $order['created_at']; ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
+
                     </div>
                 </div>
             </main>
             <?php require_once 'includes/footer.php'; ?>
         </div>
     </div>
+
+
+    <div class="modal fade" id="DeleteModal" tabindex="-1" role="dialog" aria-labelledby="DeleteModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="DeleteModalLabel">Delete Confirmation</h5>
+                    <i class="fa-solid fa-xmark" style="font-size:20px; cursor:pointer;" data-dismiss="modal"
+                        aria-label="Close"></i>
+                </div>
+                <div class="modal-body">
+                    <div id="message"></div>
+                    Are you sure you want to delete this Customer?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-get-main" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-get-del" id="confirmDeleteBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
 
 
 
@@ -276,10 +360,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 
-
-
     <script src="../vendor/js/datatables-simple-demo.js"></script>
-    <script src="functions/js/edit-status.js"></script>
 
 </body>
 

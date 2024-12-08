@@ -6,6 +6,7 @@ include_once 'functions/fetch-feedbacks.php';
 
 redirectToLogin();
 
+
 $sql = "SELECT COUNT(*) AS user_count FROM tbl_users";
 
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01'); // First day of the current month
@@ -45,6 +46,64 @@ $stm3->execute();
 $row3 = $stm3->fetch(PDO::FETCH_ASSOC);
 // Get the user count
 $application_count = $row3['application_count'];
+
+
+
+
+
+// Prepare query to calculate total revenue for the current month with optional date filtering
+$currentMonth = date('Y-m');
+$currentMonthRevenueQuery = "
+    SELECT SUM(tax) AS total_revenue 
+    FROM tbladmin_taxcollected_stats 
+    WHERE DATE_FORMAT(collectedAt, '%Y-%m') = :currentMonth ";
+
+// Add date range condition if filters are provided
+if ($startDate && $endDate) {
+    $currentMonthRevenueQuery .= " AND collectedAt BETWEEN :start_date AND :end_date";
+}
+
+$stmt = $DB_con->prepare($currentMonthRevenueQuery);
+$stmt->bindParam(':currentMonth', $currentMonth, PDO::PARAM_STR);
+
+if ($startDate && $endDate) {
+    $stmt->bindParam(':start_date', $startDate);
+    $stmt->bindParam(':end_date', $endDate);
+}
+
+$stmt->execute();
+$currentRevenue = $stmt->fetch(PDO::FETCH_ASSOC)['total_revenue'] ?? 0;
+
+// Prepare the previous month's value with the same client_id filter
+$lastMonth = date('Y-m', strtotime('-1 month'));
+
+$lastMonthRevenueQuery = "
+    SELECT SUM(tax) AS total_revenue 
+    FROM tbladmin_taxcollected_stats 
+    WHERE DATE_FORMAT(collectedAt, '%Y-%m') = :lastMonth";
+
+$stmt = $DB_con->prepare($lastMonthRevenueQuery);
+$stmt->bindParam(':lastMonth', $lastMonth, PDO::PARAM_STR);
+$stmt->execute();
+$lastRevenue = $stmt->fetch(PDO::FETCH_ASSOC)['total_revenue'] ?? 0;
+
+// Calculate the percentage change
+if ($lastRevenue > 0) {
+    $percentageChange = (($currentRevenue - $lastRevenue) / $lastRevenue) * 100;
+} else {
+    $percentageChange = $currentRevenue > 0 ? 100 : 0; // Assume 100% increase if no revenue last month
+}
+
+// Determine the label for the month or date range
+if ($startDate && $endDate && $startDate !== date('Y-m-01') && $endDate !== date('Y-m-t')) {
+    // Convert start and end dates to readable format (e.g., July 01, 2024)
+    $startMonthName = date('F d, Y', strtotime($startDate));
+    $endMonthName = date('F d, Y', strtotime($endDate));
+    $filteredMonthLabel = "$startMonthName and $endMonthName";
+} else {
+    // Default to the current month
+    $filteredMonthLabel = "Month of " . date('F');
+}
 
 ?>
 <!DOCTYPE html>
@@ -93,7 +152,38 @@ $application_count = $row3['application_count'];
                         <li class="breadcrumb-item active">Dashboard</li>
                     </ol>
                     <div class="row">
-
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card text-white mb-4"
+                                style="background: #3a3939; color: white; margin-bottom: 1.5rem;">
+                                <div class="card-body">
+                                    <div class="lbl" style="display:flex; justify-content:start; align-items:center;">
+                                        <h4>₱<?php echo number_format($currentRevenue, 2); ?></h4>
+                                        &nbsp;
+                                        <p style="font-size:0.9rem;">
+                                            <?php if ($percentageChange > 0): ?>
+                                                <span class="text-success">
+                                                    <i class="fas fa-arrow-up"></i>
+                                                    +<?php echo number_format($percentageChange, 2); ?>%
+                                                </span>
+                                            <?php elseif ($percentageChange < 0): ?>
+                                                <span class="text-danger">
+                                                    <i class="fas fa-arrow-down"></i>
+                                                    <?php echo number_format($percentageChange, 2); ?>%
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="text-muted">No Change</span>
+                                            <?php endif; ?>
+                                        </p>
+                                    </div>
+                                    Actual Income as of <?php echo $filteredMonthLabel; ?>
+                                </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <a class="small text-white stretched-link" href="income-details.php">View
+                                        Details</a>
+                                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="col-xl-3 col-md-6">
                             <div class="card bg-primary text-white mb-4">
                                 <div class="card-body">

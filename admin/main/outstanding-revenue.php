@@ -193,14 +193,14 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                     <br>
                     <ol class="breadcrumb mb-4">
                         <li class="breadcrumb-item"><a href="index.php" class="link-ref">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Monthly Revenue</li>
+                        <li class="breadcrumb-item active">Outstanding Revenue</li>
                     </ol>
 
                     <div class="card mb-4">
                         <div class="card-header">
                             <div class="form-group">
                                 <i class="fa-solid fa-cube"></i>&nbsp;
-                                <b>List of Revenue per month</b>
+                                <b>List of Outstanding Revenues</b>
                                 &nbsp; | &nbsp;
                                 <a href="outstanding-revenue.php?export=true&start_date=<?php echo $startDate; ?>&end_date=<?php echo $endDate; ?>"
                                     class="btn-get-main" style="text-decoration:none;color:white;">
