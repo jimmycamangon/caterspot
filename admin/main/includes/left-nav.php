@@ -48,9 +48,13 @@
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-outdent"></i></div>
                             Outstanding Revenue
                         </a>
+                        <a class="nav-link" href="top-contributors.php">
+                            <div class="sb-nav-link-icon"><i class="fa-solid fa-money-bill"></i></div>
+                            Top Contributors
+                        </a>
                         <a class="nav-link" href="top-cater-permonth.php">
                             <div class="sb-nav-link-icon"><i class="fa-solid fa-star"></i></div>
-                            Top Caterings
+                            Top Ratings
                         </a>
                     </nav>
                 </div>

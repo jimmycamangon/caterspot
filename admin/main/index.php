@@ -260,13 +260,27 @@ if ($startDate && $endDate && $startDate !== date('Y-m-01') && $endDate !== date
                             </div>
                         </div>
                     </div>
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <i class="fas fa-chart-bar me-1"></i>
-                            Best Performing Catering Services
+                    <div class="row">
+                    <div class="col-xl-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="fas fa-chart-area me-1"></i>
+                                    Top Financial Contributors
+                                </div>
+                                <div class="card-body"><canvas id="topContributor" width="100%" height="40"></canvas></div>
+                            </div>
                         </div>
-                        <div class="card-body"><canvas id="topCaterChart" width="100%" height="30"></canvas></div>
+                        <div class="col-xl-6">
+                            <div class="card mb-4">
+                            <div class="card-header">
+                            <i class="fas fa-chart-bar me-1"></i>
+                            Best Rated Caterers Based on Feedback
+                        </div>
+                        <div class="card-body"><canvas id="topCaterChart" width="100%" height="40"></canvas></div>
+                            </div>
+                        </div>
                     </div>
+
 
                     <div class="card mb-4">
                         <div class="card-header">
@@ -351,6 +365,7 @@ if ($startDate && $endDate && $startDate !== date('Y-m-01') && $endDate !== date
     <script src="functions/js/chart-tax-perday.js"></script>
     <script src="functions/js/chart-tax-permonth.js"></script>
     <script src="functions/js/chart-top-cater.js"></script>
+    <script src="functions/js/chart-top-contributor.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
         crossorigin="anonymous"></script>
     <script src="../vendor/js/datatables-simple-demo.js"></script>

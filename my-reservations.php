@@ -96,7 +96,7 @@ if (!isset($_SESSION['user_id'])) {
     <section id="reservation" class="d-flex ">
         <div class="container" data-aos="fade-up">
             <div class="alert alert-primary" role="alert" style="font-size:0.9rem;">
-                <b>Notice:</b> <i>Please be advised that after a period of 2 days from the initial request, we are
+                <b>Notice:</b> <i>Please be advised that after a period of 1 week from the initial request, we are
                     unable to process
                     cancellations.</i>
             </div>

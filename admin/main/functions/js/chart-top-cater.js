@@ -5,7 +5,7 @@ function generateRandomColors(count) {
         const r = Math.floor(Math.random() * 256);
         const g = Math.floor(Math.random() * 256);
         const b = Math.floor(Math.random() * 256);
-        colors.push(`rgba(${r}, ${g}, ${b}, 0.2)`); // Background color with transparency
+        colors.push(`rgba(${r}, ${g}, ${b}, 0.6)`); // Slightly higher transparency
     }
     return colors;
 }
@@ -30,15 +30,8 @@ function populateRatingsChart(data) {
     const labels = data.map(entry => entry.username);
     const ratingsData = data.map(entry => parseFloat(entry.average_rating));
 
-    // Calculate the maximum rating value
-    const maxRating = Math.max(...ratingsData);
-
-    // Adjust the max value (round up to next whole number for a cleaner scale)
-    const adjustedMax = Math.ceil(maxRating);
-
     // Generate random colors for the chart
     const backgroundColors = generateRandomColors(data.length);
-    const borderColors = backgroundColors.map(color => color.replace('0.2', '1')); // Higher opacity for borders
 
     // Prepare the data for the chart
     const chartData = {
@@ -46,8 +39,6 @@ function populateRatingsChart(data) {
         datasets: [{
             label: 'Average Rating',
             backgroundColor: backgroundColors,
-            borderColor: borderColors,
-            borderWidth: 1,
             data: ratingsData,
         }],
     };
@@ -55,32 +46,17 @@ function populateRatingsChart(data) {
     // Populate the chart
     const ctx = document.getElementById('topCaterChart').getContext('2d');
     new Chart(ctx, {
-        type: 'bar',
+        type: 'pie', // Changed from 'bar' to 'pie'
         data: chartData,
         options: {
             responsive: true,
             plugins: {
                 legend: {
                     display: true,
+                    position: 'top',
                 },
                 tooltip: {
                     enabled: true,
-                },
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Caterers',
-                    },
-                },
-                y: {
-                    beginAtZero: true,
-                    max: adjustedMax,  // Dynamically adjust max value based on the data
-                    title: {
-                        display: true,
-                        text: 'Average Rating',
-                    },
                 },
             },
         },
