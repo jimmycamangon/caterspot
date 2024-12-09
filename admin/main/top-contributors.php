@@ -54,7 +54,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
     ]);
     // Adjusted Headers for Excel Export
     $sheet->setCellValue('A6', 'Client');
-    $sheet->setCellValue('B6', 'Tax Contribution');
+    $sheet->setCellValue('B6', 'Client Contribution');
     $sheet->setCellValue('C6', 'Collected at');
 
     // Adjust the headers' alignment and color
@@ -229,7 +229,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'true') {
                                 <thead>
                                     <tr>
                                         <th>Client</th>
-                                        <th>Tax Contribution</th>
+                                        <th>Client Contribution</th>
                                         <th>Collected at</th>
                                     </tr>
                                 </thead>

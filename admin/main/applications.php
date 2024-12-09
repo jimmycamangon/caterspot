@@ -131,30 +131,38 @@ redirectToLogin();
 
     <!-- Reject Confirmation Modal -->
     <div class="modal fade" id="RejectModal" tabindex="-1" role="dialog" aria-labelledby="RejectModalLabelLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="RejectModalLabelLabel">Reject Confirmation</h5>
-                    <i class="fa-solid fa-xmark" style="font-size:20px; cursor:pointer;" data-dismiss="modal"
-                        aria-label="Close"></i>
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="RejectModalLabelLabel">Reject Confirmation</h5>
+                <i class="fa-solid fa-xmark" style="font-size:20px; cursor:pointer;" data-dismiss="modal"
+                    aria-label="Close"></i>
+            </div>
+            <div class="modal-body">
+                <div id="message"></div>
+                Are you sure you want to reject the application of this client?
+                <br><br>
+                <div class="form-group">
+                    <label for="remarks">Select a Reason:</label>
+                    <select class="form-control" id="remarks" name="remarks">
+                        <option value="" disabled selected>Select a reason</option>
+                        <option value="Wrong credentials">Wrong credentials</option>
+                        <option value="Non-compliance with policies">Non-compliance with policies</option>
+                        <option value="Unclear requirements">Unclear requirements</option>
+                        <option value="Incomplete client details">Incomplete client details</option>
+                        <option value="Invalid or incorrect credentials">Invalid or incorrect credentials</option>
+                        <option value="Missing required documentation">Missing required documentation</option>
+                    </select>
                 </div>
-                <div class="modal-body">
-                    <div id="message"></div>
-                    Are you sure you want to reject the application of this client?
-                    <br><br>
-                    <div class="form-group">
-                        <label for="remarks">Provide a Reason:</label>
-                        <textarea class="form-control" id="remarks" name="remarks"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-get-main" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn-get-del" id="confirmReject">Reject</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-get-main" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-get-del" id="confirmReject">Reject</button>
             </div>
         </div>
     </div>
+</div>
 
     <div class="modal fade" id="DeleteModal" tabindex="-1" role="dialog" aria-labelledby="DeleteModalLabel"
         aria-hidden="true">
@@ -203,10 +211,14 @@ redirectToLogin();
 
             $('#confirmReject').on('click', function () {
                 var clientId = $(this).data('client-id'); // Get client_id from the button
-                var remarks = $('#remarks').val(); // Get remarks from the textarea
+                var remarks = $('#remarks').val(); // Get remarks from the dropdown
+
+                if (!remarks) {
+                    $("#message").html('<div class="alert alert-danger" role="alert">Please select a reason.</div>');
+                    return;
+                }
 
                 rejectApplication(clientId, remarks); // Call rejectApplication function
-
             });
         });
     </script>
