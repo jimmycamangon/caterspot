@@ -56,7 +56,7 @@ $currentMonth = date('Y-m');
 $currentMonthRevenueQuery = "
     SELECT SUM(tax) AS total_revenue 
     FROM tbladmin_taxcollected_stats 
-    WHERE DATE_FORMAT(collectedAt, '%Y-%m') = :currentMonth ";
+    WHERE status = 'Paid' AND DATE_FORMAT(collectedAt, '%Y-%m') = :currentMonth ";
 
 // Add date range condition if filters are provided
 if ($startDate && $endDate) {
@@ -80,7 +80,7 @@ $lastMonth = date('Y-m', strtotime('-1 month'));
 $lastMonthRevenueQuery = "
     SELECT SUM(tax) AS total_revenue 
     FROM tbladmin_taxcollected_stats 
-    WHERE DATE_FORMAT(collectedAt, '%Y-%m') = :lastMonth";
+    WHERE status = 'Paid' AND DATE_FORMAT(collectedAt, '%Y-%m') = :lastMonth";
 
 $stmt = $DB_con->prepare($lastMonthRevenueQuery);
 $stmt->bindParam(':lastMonth', $lastMonth, PDO::PARAM_STR);

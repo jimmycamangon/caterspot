@@ -387,7 +387,8 @@ $package_names = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <div id="invalidpax-display">
                                     <li style="color:red; font-size:0.8rem;">
                                         Be advised that our catering services require a minimum order of 10
-                                        items/menus, with a maximum capacity of 600.
+                                        items/menus, with a maximum capacity of 600. <br>
+                                        <i>Please note that the 2% tax applied to payments is non-refundable.</i>
                                     </li>
                                 </div>
 

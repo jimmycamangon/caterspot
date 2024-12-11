@@ -16,7 +16,8 @@ if (isset($_SESSION['admin_id'])) {
                 LEFT JOIN tbl_userinformationorder AS B ON A.transactionNo = B.transactionNo
                 LEFT JOIN tbl_packages AS C ON B.package_id = C.package_id
                 LEFT JOIN tblclient_settings AS D ON A.cater = D.cater_name
-                WHERE A.status = 'Completed'
+                LEFT JOIN tbladmin_taxcollected_stats AS E ON A.transactionNo = E.transactionNo
+                WHERE A.status = 'Completed' AND E.status = 'Paid'
                 AND DATE(A.order_date) BETWEEN :start_date AND :end_date
                 ORDER BY A.is_read = 0 DESC";
 
